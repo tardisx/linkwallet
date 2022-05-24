@@ -1,0 +1,5 @@
+<ul>
+    {{ range .results }}
+    <li><a href="{{ .URL }}">{{ .Info.Title }}</a> - {{ .URL }}</li>
+    {{ end }}
+</ul>

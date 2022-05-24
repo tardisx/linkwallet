@@ -1,0 +1,53 @@
+
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>linkwallet</title>
+    <link rel="stylesheet" href="/assets/css/foundation.css">
+    <link rel="stylesheet" href="/assets/css/app.css">
+    <script src="/assets/js/htmx.min.js" defer></script>
+
+  </head>
+<body>
+
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <ul class="dropdown menu" data-dropdown-menu>
+        <li class="menu-text">linkwallet</li>
+        <li><a href="/">Home</a></li>
+        <li>
+          <a href="#">Admin</a>
+          <ul class="menu vertical">
+            <li><a href="/manage">Manage links</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="top-bar-right">
+      <ul class="menu">
+        <li><a href="https://github.com">gh</a></li>
+        <!-- <li><input type="search" placeholder="Search"></li>
+        <li><button type="button" class="button">Search</button></li> -->
+      </ul>
+    </div>
+  </div>
+
+    <div class="grid-container">
+      {{ if eq .page "root" }}
+      {{ template "search.html" . }}
+      {{ else if eq .page "manage" }}
+      {{ template "manage.html" . }}
+      {{ end }}
+      {{/* template "foundation_sample.html" . */}}
+    </div>
+
+
+    <script src="/assets/js/vendor/jquery.js"></script>
+    <script src="/assets/js/vendor/what-input.js"></script>
+    <script src="/assets/js/vendor/foundation.js"></script>
+    <script src="/assets/js/app.js"></script>
+  </body>
+</html>

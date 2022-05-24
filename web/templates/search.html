@@ -1,0 +1,41 @@
+<div class="grid-x grid-padding-x">
+    <div class="large-8 medium-8 cell">
+
+        <h5>Search:
+            <span id="htmx-indicator-search" class="htmx-indicator">
+                <img src="/assets/image/beating.gif" /> Searching...
+            </span>
+        </h5>
+        <form onsubmit="return false"> 
+            <div class="grid-x grid-padding-x">
+                <div class="large-12 cell">
+                    <label>Free text</label>
+                    <input type="text" name="query" placeholder="" hx-post="/search"
+                        hx-trigger="keyup changed delay:50ms, search" hx-target="#search-results"
+                        hx-indicator="#htmx-indicator-search" />
+                </div>
+            </div>
+        </form>
+        <div id="search-results">
+        </div>
+    </div>
+
+    {{ template "add_url_form.html" . }}
+  
+
+    <!-- <div class="large-4 medium-4 cell">
+        <h5>Try one of these buttons:</h5>
+        <p><a href="#" class="button">Simple Button</a><br />
+            <a href="#" class="success button">Success Btn</a><br />
+            <a href="#" class="alert button">Alert Btn</a><br />
+            <a href="#" class="secondary button">Secondary Btn</a>
+        </p>
+        <div class="callout">
+            <h5>So many components, girl!</h5>
+            <p>A whole kitchen sink of goodies comes with Foundation. Check out the docs to see them all, along with
+                details on making them your own.</p>
+            <a href="https://get.foundation/sites/docs/" class="small button">Go to Foundation Docs</a>
+        </div>
+    </div> -->
+
+</div>

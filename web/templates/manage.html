@@ -1,0 +1,29 @@
+<div class="grid-x grid-padding-x">
+    <div class="large-12 cell">
+
+        <h5>Manage:
+         
+        </h5>
+
+        <table>
+            <tr><th>id</th><th>url</th><th>created</th><th>scraped</th></tr>
+            {{ range .bookmarks }}
+            <tr>
+                <th>{{ .ID }}</th>
+                <td>
+                    <a href="{{ .URL }}">{{ .Info.Title }}</a>
+                    <br>
+                    <a href="{{ .URL }}">{{ niceURL .URL }}</a>
+                </td>
+                <td>{{ (nicetime .TimestampCreated).HumanDuration }} ago</td>
+                <td>{{ (nicetime .TimestampLastScraped).HumanDuration }} ago</td>
+
+                <td>
+                    <button class="button" hx-post="/scrape/{{ .ID }}">scrape</button>
+                </td>
+            </tr>
+            {{ end }}
+        </table>
+     
+    </div>
+</div>

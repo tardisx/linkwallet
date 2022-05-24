@@ -1,0 +1,36 @@
+<div class="large-8 medium-8 cell" id="add-url-form" >
+    <h5>Add URLs in bulk</h5>
+    <span>[<a hx-get="/single_add" hx-target="#add-url-form" href="#">single</a>]</span>
+    <form onsubmit="return false">
+        <div class="grid-x grid-padding-x">
+            <div class="large-12 cell">
+                <label>Paste URL's, one per line</label>
+                <textarea type="text" name="urls"  rows="10"
+                        ></textarea>
+                 
+            </div>
+        </div>
+        <button 
+            class="button" 
+            hx-post="/add_bulk"
+            hx-indicator="#htmx-indicator-bulk"
+            hx-target="#add-url-form">
+            add
+        </button>
+        <span id="htmx-indicator-bulk" class="htmx-indicator">
+            <img src="/assets/image/beating.gif" /> adding...
+        </span>
+    
+    </form>
+    {{ if .errors }}
+        <ul>
+        {{ range .errors }}
+        <li class="error">{{ . }}</li>
+        {{ end }}
+        </ul>
+    {{ else }}
+        {{ if .added }}
+        Added {{ .added }} urls
+        {{ end }}
+    {{ end }}
+</div>

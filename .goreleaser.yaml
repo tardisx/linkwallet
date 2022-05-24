@@ -1,7 +1,5 @@
 before:
   hooks:
-    # tag and push
-    - ./release_tag.pl
     # clean up/install modules
     - go mod tidy
 builds:

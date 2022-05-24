@@ -8,6 +8,7 @@ while (my $l =  <$fh>) {
         die "could not tag?\n" if $? != 0;
         system ('git', 'push', 'origin', $tag);
         die "could not push tag?\n" if $? != 0;
+        exit 0;
     }
 }
 

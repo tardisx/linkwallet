@@ -1,7 +1,5 @@
 <div id="label-widget">
     <div class="grid-x grid-padding-x">
-        <div class="small-3 medium-2 large-1 cell">
-        </div>
         <div class="small-9 medium-10 large-5 cell" 
             hx-post="/tags"
             hx-target="#label-widget"
@@ -17,12 +15,11 @@
                title="remove {{ . }}"
                hx-trigger="click"
                hx-target="#label-widget"
-               hx-post="/tags?remove={{ . }}">
+               hx-post="/tags?remove={{ . }}">[-]</a>
                 {{ . }}
-            </a>
+            
             {{ end }}
             <input type="hidden" name="tags_hidden" value="{{ .tags_hidden }}">
-
         </div>    
     </div>
 </div>

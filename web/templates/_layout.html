@@ -25,6 +25,8 @@
             <li><a href="/export">Export all URLs</a></li>
           </ul>
         </li>
+        <li><a href="javascript:void(window.open('http://localhost:8080/bookmarklet?url=' +encodeURIComponent(window.location), 'windowName', 'width=640,height=480'))">Bookmarklet</a></li>
+
       </ul>
     </div>
     <div class="top-bar-right">
@@ -39,6 +41,8 @@
     <div class="grid-container">
       {{ if eq .page "root" }}
       {{ template "search.html" . }}
+      {{ else if eq .page "bookmarklet_click" }}
+      {{ template "bookmarklet.html" . }}
       {{ else if eq .page "manage" }}
       {{ template "manage.html" . }}
       {{ end }}

@@ -1,12 +1,16 @@
 <div class="grid-x grid-padding-x">
     <div class="large-12 cell">
 
-        <h5>Manage:
-         
-        </h5>
+        <h5>Manage links</h5>
 
         <table>
-            <tr><th>id</th><th>url</th><th>created</th><th>scraped</th></tr>
+            <tr>
+                <th>id</th>
+                <th>title/url</th>
+                <th>tags</th>
+                <th class="show-for-large">created</th>
+                <th class="show-for-large">scraped</th>
+            </tr>
             {{ range .bookmarks }}
             <tr>
                 <th>{{ .ID }}</th>
@@ -15,11 +19,14 @@
                     <br>
                     <a href="{{ .URL }}">{{ niceURL .URL }}</a>
                 </td>
-                <td>{{ (nicetime .TimestampCreated).HumanDuration }} ago</td>
-                <td>{{ (nicetime .TimestampLastScraped).HumanDuration }} ago</td>
+                <td>
+                    {{ join .Tags ", " }}
+                </td>
+                <td class="show-for-large">{{ (nicetime .TimestampCreated).HumanDuration }} ago</td>
+                <td class="show-for-large">{{ (nicetime .TimestampLastScraped).HumanDuration }} ago</td>
 
                 <td>
-                    <button class="button" hx-post="/scrape/{{ .ID }}">scrape</button>
+                    <a class="button" hx-swap="outerHTML" hx-post="/scrape/{{ .ID }}">scrape</button>
                 </td>
             </tr>
             {{ end }}

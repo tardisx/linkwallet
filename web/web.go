@@ -50,7 +50,7 @@ func Create(bmm *db.BookmarkManager) *Server {
 	}
 
 	// templ := template.Must(template.New("").Funcs(template.FuncMap{"dict": dictHelper}).ParseFS(templateFiles, "templates/*.html"))
-	templ := template.Must(template.New("").Funcs(template.FuncMap{"nicetime": niceTime, "niceURL": niceURL}).ParseFS(templateFiles, "templates/*.html"))
+	templ := template.Must(template.New("").Funcs(template.FuncMap{"nicetime": niceTime, "niceURL": niceURL, "join": strings.Join}).ParseFS(templateFiles, "templates/*.html"))
 
 	r := gin.Default()
 
@@ -186,7 +186,7 @@ func Create(bmm *db.BookmarkManager) *Server {
 		idNum, _ := strconv.ParseInt(id, 10, 32)
 		bm := bmm.LoadBookmarkByID(uint64(idNum))
 		bmm.QueueScrape(&bm)
-		c.String(http.StatusOK, "queued")
+		c.String(http.StatusOK, "<p>scrape queued</p>")
 	})
 
 	r.GET("/export", func(c *gin.Context) {
@@ -197,6 +197,15 @@ func Create(bmm *db.BookmarkManager) *Server {
 		if err != nil {
 			log.Printf("got error when exporting: %s", err)
 		}
+	})
+
+	r.GET("/bookmarklet", func(c *gin.Context) {
+		url := c.Query("url")
+		log.Printf(url)
+		meta := gin.H{"page": "bookmarklet_click", "url": url}
+		c.HTML(http.StatusOK,
+			"_layout.html", meta,
+		)
 	})
 
 	return server

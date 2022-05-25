@@ -1,17 +1,25 @@
 <div class="large-8 medium-8 cell" id="add-url-form" >
-    <h5>Add a new URL</h5>
-    <span>[<a hx-get="/bulk_add" hx-target="#add-url-form" href="#">bulk</a>]</span>
+    <div>
+        <h5 style="display:inline-block;">Add a new URL</h5>
+        <p  style="display:inline-block;">[<a hx-get="/bulk_add" hx-target="#add-url-form" href="#">bulk add</a>]</h5>
+    </div>
+
     <form onsubmit="return false">
         <div class="grid-x grid-padding-x">
             <div class="large-6 cell">
                 <label>Paste a URL</label>
-                <input type="text" name="url" 
-                    hx-post="/add"
-                    hx-target="#add-url-form"  hx-trigger=""
+                <input type="text" name="url" value="{{ .url }}"
+                      hx-trigger=""
                 />
             </div>
             <div class="large-6 cell">
                 {{ template "tags_widget.html" . }}
+            </div>
+        </div>
+        <div class="grid-x grid-padding-x">
+            <div class="medium-6 cell">
+                <a href="#" class="button" hx-post="/add"
+                hx-target="#add-url-form">add</a>
             </div>
         </div>
     </form>

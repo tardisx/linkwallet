@@ -189,6 +189,16 @@ func Create(bmm *db.BookmarkManager) *Server {
 		c.String(http.StatusOK, "queued")
 	})
 
+	r.GET("/export", func(c *gin.Context) {
+		c.Writer.Header().Set("Content-Type", "text/plain")
+		c.Writer.Header().Set("Content-Disposition", "attachment; filename=\"bookmarks.txt\"")
+		err := bmm.ExportBookmarks(c.Writer)
+		// this is a bit late, but we already added headers, so at least log it.
+		if err != nil {
+			log.Printf("got error when exporting: %s", err)
+		}
+	})
+
 	return server
 }
 

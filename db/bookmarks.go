@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"sync"
 	"time"
@@ -46,6 +47,19 @@ func (m *BookmarkManager) ListBookmarks() ([]entity.Bookmark, error) {
 		panic(err)
 	}
 	return bookmarks, nil
+}
+
+// ExportBookmarks exports all bookmarks to an io.Writer
+func (m *BookmarkManager) ExportBookmarks(w io.Writer) error {
+	bms := []entity.Bookmark{}
+	err := m.db.store.Find(&bms, &badgerhold.Query{})
+	if err != nil {
+		return fmt.Errorf("could not export bookmarks: %w", err)
+	}
+	for _, bm := range bms {
+		w.Write([]byte(bm.URL + "\n"))
+	}
+	return nil
 }
 
 func (m *BookmarkManager) SaveBookmark(bm *entity.Bookmark) error {

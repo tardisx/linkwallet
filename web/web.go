@@ -14,6 +14,7 @@ import (
 
 	"github.com/tardisx/linkwallet/db"
 	"github.com/tardisx/linkwallet/entity"
+	"github.com/tardisx/linkwallet/version"
 
 	"github.com/hako/durafmt"
 
@@ -50,7 +51,7 @@ func Create(bmm *db.BookmarkManager) *Server {
 	}
 
 	// templ := template.Must(template.New("").Funcs(template.FuncMap{"dict": dictHelper}).ParseFS(templateFiles, "templates/*.html"))
-	templ := template.Must(template.New("").Funcs(template.FuncMap{"nicetime": niceTime, "niceURL": niceURL, "join": strings.Join}).ParseFS(templateFiles, "templates/*.html"))
+	templ := template.Must(template.New("").Funcs(template.FuncMap{"nicetime": niceTime, "niceURL": niceURL, "join": strings.Join, "version": version.Is}).ParseFS(templateFiles, "templates/*.html"))
 
 	r := gin.Default()
 

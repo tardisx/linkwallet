@@ -11,11 +11,15 @@ builds:
       - windows
       - darwin
 dockers:
-  - image_templates:
+  - goos: linux
+    goarch: amd64
+    image_templates:
     - "tardisx/linkwallet:{{ .Tag }}"
     - "tardisx/linkwallet:v{{ .Major }}"
     - "tardisx/linkwallet:v{{ .Major }}.{{ .Minor }}"
     - "tardisx/linkwallet"
+    build_flag_templates:
+    - "--platform=linux/amd64"
 archives:
   - replacements:
       darwin: Darwin

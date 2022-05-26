@@ -23,7 +23,7 @@ func (db *DB) UpdateIndexForWordsByID(words []string, id uint64) {
 		delete(wi.Bitmap, id)
 	})
 
-	// addiing
+	// adding
 	var find, store time.Duration
 	for i, word := range words {
 		// log.Printf("indexing %s", word)

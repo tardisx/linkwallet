@@ -42,7 +42,7 @@ type Server struct {
 }
 
 // Create creates a new web server instance and sets up routing.
-func Create(bmm *db.BookmarkManager) *Server {
+func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 
 	// setup routes for the static assets (vendor includes)
 	staticFS, err := fs.Sub(staticFiles, "static")
@@ -52,6 +52,11 @@ func Create(bmm *db.BookmarkManager) *Server {
 
 	// templ := template.Must(template.New("").Funcs(template.FuncMap{"dict": dictHelper}).ParseFS(templateFiles, "templates/*.html"))
 	templ := template.Must(template.New("").Funcs(template.FuncMap{"nicetime": niceTime, "niceURL": niceURL, "join": strings.Join, "version": version.Is}).ParseFS(templateFiles, "templates/*.html"))
+
+	config, err := cmm.LoadConfig()
+	if err != nil {
+		log.Fatalf("could not start server - failed to load config: %s", err)
+	}
 
 	r := gin.Default()
 
@@ -67,7 +72,7 @@ func Create(bmm *db.BookmarkManager) *Server {
 	r.StaticFS("/assets", http.FS(staticFS))
 
 	r.GET("/", func(c *gin.Context) {
-		meta := gin.H{"page": "root"}
+		meta := gin.H{"page": "root", "config": config}
 		c.HTML(http.StatusOK,
 			"_layout.html", meta,
 		)
@@ -75,10 +80,25 @@ func Create(bmm *db.BookmarkManager) *Server {
 
 	r.GET("/manage", func(c *gin.Context) {
 		allBookmarks, _ := bmm.ListBookmarks()
-		meta := gin.H{"page": "manage", "bookmarks": allBookmarks}
+		meta := gin.H{"page": "manage", "config": config, "bookmarks": allBookmarks}
 		c.HTML(http.StatusOK,
 			"_layout.html", meta,
 		)
+	})
+
+	r.GET("/config", func(c *gin.Context) {
+		meta := gin.H{"page": "config", "config": config}
+		c.HTML(http.StatusOK,
+			"_layout.html", meta,
+		)
+	})
+
+	r.POST("/config", func(c *gin.Context) {
+		config.BaseURL = c.PostForm("baseurl")
+		cmm.SaveConfig(&config)
+		meta := gin.H{"config": config}
+
+		c.HTML(http.StatusOK, "config_form.html", meta)
 	})
 
 	r.POST("/search", func(c *gin.Context) {
@@ -152,8 +172,6 @@ func Create(bmm *db.BookmarkManager) *Server {
 
 	r.POST("/tags", func(c *gin.Context) {
 
-		log.Printf("POST: tag '%s' tags_hidden '%s'", c.PostForm("tag"), c.PostForm("tags_hidden"))
-
 		newTag := c.PostForm("tag")
 		oldTags := strings.Split(c.PostForm("tags_hidden"), "|")
 
@@ -203,7 +221,7 @@ func Create(bmm *db.BookmarkManager) *Server {
 	r.GET("/bookmarklet", func(c *gin.Context) {
 		url := c.Query("url")
 		log.Printf(url)
-		meta := gin.H{"page": "bookmarklet_click", "url": url}
+		meta := gin.H{"page": "bookmarklet_click", "config": config, "url": url}
 		c.HTML(http.StatusOK,
 			"_layout.html", meta,
 		)

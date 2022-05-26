@@ -1,0 +1,12 @@
+
+<form onsubmit="false;" id="config-form" hx-target="#config-form">
+    <table>
+        <tr>
+            <th>Base URL</th>
+            <td>
+                <input type="text" name="baseurl" value="{{ .config.BaseURL }}">
+            </td>
+        </tr>
+    </table>
+    <p><a class="button" hx-post="/config">save</a></p>
+</form>

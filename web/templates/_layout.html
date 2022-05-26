@@ -21,11 +21,12 @@
         <li>
           <a href="#">Admin</a>
           <ul class="menu vertical">
+            <li><a href="/config">Configuration</a></li>
             <li><a href="/manage">Manage links</a></li>
             <li><a href="/export">Export all URLs</a></li>
           </ul>
         </li>
-        <li><a href="javascript:void(window.open('http://localhost:8080/bookmarklet?url=' +encodeURIComponent(window.location), 'windowName', 'width=640,height=480'))">Bookmarklet</a></li>
+        <li><a href="javascript:void(window.open('{{ .config.BaseURL }}/bookmarklet?url=' +encodeURIComponent(window.location), 'windowName', 'width=640,height=480'))">Bookmarklet</a></li>
 
       </ul>
     </div>
@@ -50,6 +51,8 @@
       {{ template "bookmarklet.html" . }}
       {{ else if eq .page "manage" }}
       {{ template "manage.html" . }}
+      {{ else if eq .page "config" }}
+      {{ template "config.html" . }}
       {{ end }}
       {{/* template "foundation_sample.html" . */}}
     </div>

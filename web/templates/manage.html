@@ -20,7 +20,9 @@
                     <a href="{{ .URL }}">{{ niceURL .URL }}</a>
                 </td>
                 <td>
-                    {{ join .Tags ", " }}
+                    {{ range .Tags }}
+                    <span class="label primary">{{ . }}</span>
+                    {{ end }}
                 </td>
                 <td class="show-for-large">{{ (nicetime .TimestampCreated).HumanDuration }} ago</td>
                 <td class="show-for-large">{{ (nicetime .TimestampLastScraped).HumanDuration }} ago</td>

@@ -12,11 +12,12 @@
         <div class="small-12 large-6 cell">
             {{ range .tags }}
             <a href="#"
+               class=""
                title="remove {{ . }}"
                hx-trigger="click"
                hx-target="#label-widget"
                hx-post="/tags?remove={{ . }}">[-]</a>
-                {{ . }}
+               <span class="label primary">{{ . }}</span> 
             
             {{ end }}
             <input type="hidden" name="tags_hidden" value="{{ .tags_hidden }}">

@@ -250,7 +250,7 @@ func cleanupTags(tags []string) []string {
 	keys := make(map[string]struct{})
 	for _, k := range tags {
 		if k != "" && k != "|" {
-			keys[k] = struct{}{}
+			keys[strings.ToLower(k)] = struct{}{}
 		}
 	}
 	out := []string{}

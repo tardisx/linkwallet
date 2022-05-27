@@ -1,7 +1,20 @@
 <div class="grid-x grid-padding-x">
     <div class="large-12 cell">
 
+        {{ if .clicked }}
+
+        <p>Drag the bookmarklet link below to your bookmarks bar, or right click
+            it, copy the link and add it to your bookmarks manually.</p>
+
+        <p>Then whenever you are on a webpage you would like to bookmark, just
+            click the bookmarklet.</p>
+
+        <a class="button" href="javascript:void(window.open('{{ .config.BaseURL }}/bookmarklet?url=' +encodeURIComponent(window.location), 'windowName', 'width=640,height=480'))">Bookmarklet</a>
+
+
+        {{ else }}
         {{ template "add_url_form.html" .}}
+        {{ end }}
 
     </div>
 </div>

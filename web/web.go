@@ -220,8 +220,14 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 
 	r.GET("/bookmarklet", func(c *gin.Context) {
 		url := c.Query("url")
-		log.Printf(url)
+
 		meta := gin.H{"page": "bookmarklet_click", "config": config, "url": url}
+
+		// check if they just clicked it from the actual app
+		if strings.Index(url, config.BaseURL) == 0 {
+			meta["clicked"] = true
+		}
+
 		c.HTML(http.StatusOK,
 			"_layout.html", meta,
 		)

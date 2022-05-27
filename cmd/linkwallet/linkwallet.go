@@ -17,7 +17,7 @@ func main() {
 
 	go func() { version.UpdateVersionInfo() }()
 
-	log.Printf("linkallet verison %s starting", version.Is())
+	log.Printf("linkwallet version %s starting", version.Is())
 
 	server := web.Create(bmm, cmm)
 	go bmm.RunQueue()

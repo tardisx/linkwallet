@@ -117,7 +117,10 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 
 	r.POST("/add", func(c *gin.Context) {
 		url := c.PostForm("url")
-		tags := strings.Split(c.PostForm("tags_hidden"), "|")
+		tags := []string{}
+		if c.PostForm("tags_hidden") != "" {
+			tags = strings.Split(c.PostForm("tags_hidden"), "|")
+		}
 		bm := entity.Bookmark{
 			ID:   0,
 			URL:  url,
@@ -125,7 +128,6 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 		}
 		err := bmm.AddBookmark(&bm)
 
-		log.Printf("well done %d", bm.ID)
 		data := gin.H{
 			"bm":    bm,
 			"error": err,

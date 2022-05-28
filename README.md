@@ -26,16 +26,18 @@ A self-hosted bookmark database with full-text page content search.
 
 ## Docker
 
-* Copy the docker-compose.yml-sample to a directory somewhere
-* Rename to docker-compose.yml and edit to your needs
+* Copy the `docker-compose.yml-sample` to a directory somewhere
+* Rename to `docker-compose.yml` and edit to your needs
+  * In most cases, you only need to change the path to the `/data`
+    mountpoint.
 * Run `docker-compose up -d`
 
 ## Binary
 
 * Download the appropriate binary from the releases page
 * Install somewhere on your system
-* Run ./linkwallet -db-path xxxx.db where xxxx.db is the location
-  of your bookmarks database (will be created if it does not exist)
+* Run `./linkwallet -db-path /some/path/xxxx.db` where `/some/path/xxxx.db`
+  is the location of your bookmarks database (will be created if it does not yet exist)
 
 ## Source
 
@@ -55,7 +57,7 @@ on binary).
 Change the port number by setting the PORT environment variable.
 
 If you put linkwallet on a separate machine, or behind a reverse proxy,
-go into the config page and set the correct BaseURL, or the bookmarklets
+go into the config page and set the correct `BaseURL` parameter, or the bookmarklets
 will not work.
 
 # Roadmap

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/tardisx/linkwallet/entity"
@@ -11,16 +12,16 @@ type DB struct {
 	store *bolthold.Store
 }
 
-func (db *DB) Open(dir string) {
+func (db *DB) Open(path string) error {
 	// options := bolthold.DefaultOptions
 	// options.Dir = dir
 	// options.ValueDir = dir
-	store, err := bolthold.Open("bolt.db", 0666, nil)
+	store, err := bolthold.Open(path, 0666, nil)
 	if err != nil {
-		panic(err)
-
+		return fmt.Errorf("cannot open '%s' - %s", path, err)
 	}
 	db.store = store
+	return nil
 }
 
 func (db *DB) Close() {

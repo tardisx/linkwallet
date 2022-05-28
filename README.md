@@ -22,6 +22,42 @@ A self-hosted bookmark database with full-text page content search.
   * ~24Mb database (600 bookmarks, full text content indexed)
 * Easily export your bookmarks to a plain text file - your data is yours
 
+# Installation
+
+## Docker
+
+* Copy the docker-compose.yml-sample to a directory somewhere
+* Rename to docker-compose.yml and edit to your needs
+* Run `docker-compose up -d`
+
+## Binary
+
+* Download the appropriate binary from the releases page
+* Install somewhere on your system
+* Run ./linkwallet -db-path xxxx.db where xxxx.db is the location
+  of your bookmarks database (will be created if it does not exist)
+
+## Source
+
+* Checkout the code
+* `go build cmd/linkwallet/linkwallet.go`
+
+## deb/rpm packages
+
+Coming soon.
+
+# Using
+
+linkwallet is a 100% web-driven app. After running, hit the web interface
+on port 8109 (docker using the sample docker-compose.yml) or 8080 (default
+on binary).
+
+Change the port number by setting the PORT environment variable.
+
+If you put linkwallet on a separate machine, or behind a reverse proxy,
+go into the config page and set the correct BaseURL, or the bookmarklets
+will not work.
+
 # Roadmap
 
 * More options when managing links

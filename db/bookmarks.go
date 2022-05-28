@@ -10,7 +10,7 @@ import (
 	"github.com/tardisx/linkwallet/content"
 	"github.com/tardisx/linkwallet/entity"
 
-	"github.com/timshannon/badgerhold/v4"
+	bolthold "github.com/timshannon/bolthold"
 )
 
 type BookmarkManager struct {
@@ -27,12 +27,12 @@ func NewBookmarkManager(db *DB) *BookmarkManager {
 // The entity.Bookmark ID field will be updated.
 func (m *BookmarkManager) AddBookmark(bm *entity.Bookmark) error {
 	existing := entity.Bookmark{}
-	err := m.db.store.FindOne(&existing, badgerhold.Where("URL").Eq(bm.URL))
-	if err != badgerhold.ErrNotFound {
+	err := m.db.store.FindOne(&existing, bolthold.Where("URL").Eq(bm.URL))
+	if err != bolthold.ErrNotFound {
 		return fmt.Errorf("bookmark already exists")
 	}
 	bm.TimestampCreated = time.Now()
-	err = m.db.store.Insert(badgerhold.NextSequence(), bm)
+	err = m.db.store.Insert(bolthold.NextSequence(), bm)
 	if err != nil {
 		return fmt.Errorf("addBookmark returned: %w", err)
 	}
@@ -42,7 +42,7 @@ func (m *BookmarkManager) AddBookmark(bm *entity.Bookmark) error {
 // ListBookmarks returns all bookmarks.
 func (m *BookmarkManager) ListBookmarks() ([]entity.Bookmark, error) {
 	bookmarks := make([]entity.Bookmark, 0, 0)
-	err := m.db.store.Find(&bookmarks, &badgerhold.Query{})
+	err := m.db.store.Find(&bookmarks, &bolthold.Query{})
 	if err != nil {
 		panic(err)
 	}
@@ -52,7 +52,7 @@ func (m *BookmarkManager) ListBookmarks() ([]entity.Bookmark, error) {
 // ExportBookmarks exports all bookmarks to an io.Writer
 func (m *BookmarkManager) ExportBookmarks(w io.Writer) error {
 	bms := []entity.Bookmark{}
-	err := m.db.store.Find(&bms, &badgerhold.Query{})
+	err := m.db.store.Find(&bms, &bolthold.Query{})
 	if err != nil {
 		return fmt.Errorf("could not export bookmarks: %w", err)
 	}
@@ -90,7 +90,7 @@ func (m *BookmarkManager) LoadBookmarksByIDs(ids []uint64) []entity.Bookmark {
 		s[i] = v
 	}
 
-	err := m.db.store.Find(&ret, badgerhold.Where("ID").In(s...))
+	err := m.db.store.Find(&ret, bolthold.Where("ID").In(s...))
 	if err != nil {
 		panic(err)
 	}
@@ -107,7 +107,7 @@ func (m *BookmarkManager) Search(query string) ([]entity.Bookmark, error) {
 	for _, word := range words {
 		var wi *entity.WordIndex
 		err := m.db.store.Get("word_index_"+word, &wi)
-		if err == badgerhold.ErrNotFound {
+		if err == bolthold.ErrNotFound {
 			continue
 		}
 		if err != nil {
@@ -202,8 +202,8 @@ func (m *BookmarkManager) UpdateContent() {
 	for {
 		ret = []entity.Bookmark{}
 		deadline := time.Now().Add(time.Hour * -24 * 7)
-		err := m.db.store.Find(&ret, badgerhold.Where("TimestampLastScraped").Lt(deadline))
-		if err == badgerhold.ErrNotFound {
+		err := m.db.store.Find(&ret, bolthold.Where("TimestampLastScraped").Lt(deadline))
+		if err == bolthold.ErrNotFound {
 			log.Printf("none qualify")
 			time.Sleep(time.Second)
 			continue

@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/tardisx/linkwallet/entity"
-	"github.com/timshannon/badgerhold/v4"
+	bolthold "github.com/timshannon/bolthold"
 )
 
 type ConfigManager struct {
@@ -18,14 +18,14 @@ func NewConfigManager(db *DB) *ConfigManager {
 
 func (cmm *ConfigManager) LoadConfig() (entity.Config, error) {
 	config := entity.Config{}
-	err := cmm.db.store.FindOne(&config, &badgerhold.Query{})
+	err := cmm.db.store.FindOne(&config, &bolthold.Query{})
 	if err == nil {
 		if config.Version == 1 {
 			return config, nil
 		} else {
 			return entity.Config{}, fmt.Errorf("failed to load config - wrong version %d", config.Version)
 		}
-	} else if err == badgerhold.ErrNotFound {
+	} else if err == bolthold.ErrNotFound {
 		log.Printf("using default config")
 		return cmm.DefaultConfig(), nil
 	} else {

@@ -1,7 +1,7 @@
 package entity
 
 type WordIndex struct {
-	Word string `badgerhold:"index"`
+	Word string `bolthold:"index"`
 	// Bitmap roaring.Bitmap
 	Bitmap map[uint64]bool
 }

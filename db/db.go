@@ -4,19 +4,18 @@ import (
 	"log"
 
 	"github.com/tardisx/linkwallet/entity"
-
-	badgerhold "github.com/timshannon/badgerhold/v4"
+	bolthold "github.com/timshannon/bolthold"
 )
 
 type DB struct {
-	store *badgerhold.Store
+	store *bolthold.Store
 }
 
 func (db *DB) Open(dir string) {
-	options := badgerhold.DefaultOptions
-	options.Dir = dir
-	options.ValueDir = dir
-	store, err := badgerhold.Open(options)
+	// options := bolthold.DefaultOptions
+	// options.Dir = dir
+	// options.ValueDir = dir
+	store, err := bolthold.Open("bolt.db", 0666, nil)
 	if err != nil {
 		panic(err)
 
@@ -30,6 +29,6 @@ func (db *DB) Close() {
 
 func (db *DB) Dumpy() {
 	res := make([]entity.Bookmark, 0, 0)
-	db.store.Find(&res, &badgerhold.Query{})
+	db.store.Find(&res, &bolthold.Query{})
 	log.Printf("%v", res)
 }

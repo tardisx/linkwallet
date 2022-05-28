@@ -3,7 +3,7 @@ package entity
 import "time"
 
 type Bookmark struct {
-	ID                   uint64 `badgerhold:"key"`
+	ID                   uint64 `boltholdKey:"ID"`
 	URL                  string
 	Info                 PageInfo
 	Tags                 []string

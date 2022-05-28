@@ -1,12 +1,12 @@
 ---
-version: "2.1"
+version: "3.0"
 services:
   linkwallet:
     image: tardisx/linkwallet:latest
     container_name: linkwallet
-    command: /app/linkwallet -db-path=/data/linkwallet.db
+    entrypoint: [ '/linkwallet', '-db-path', '/data/linkwallet.db' ]
     volumes:
-      - /home/username/.linkwallet:/data
+      - /home/USERNAME/.linkwallet:/data
     ports:
       - 8109:8080
     restart: unless-stopped

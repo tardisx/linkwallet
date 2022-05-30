@@ -39,6 +39,16 @@ func (m *BookmarkManager) AddBookmark(bm *entity.Bookmark) error {
 	return nil
 }
 
+func (m *BookmarkManager) DeleteBookmark(bm *entity.Bookmark) error {
+	err := m.db.store.FindOne(bm, bolthold.Where("URL").Eq(bm.URL))
+	if err == bolthold.ErrNotFound {
+		return fmt.Errorf("bookmark does not exist")
+	}
+
+	m.db.store.DeleteMatching(bm, bolthold.Where("ID").Eq(bm.ID))
+	return nil
+}
+
 // ListBookmarks returns all bookmarks.
 func (m *BookmarkManager) ListBookmarks() ([]entity.Bookmark, error) {
 	bookmarks := make([]entity.Bookmark, 0, 0)

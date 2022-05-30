@@ -5,7 +5,7 @@
 
         <table>
             <tr>
-                <th>id</th>
+                <th>&nbsp;</th>
                 <th>title/url</th>
                 <th>tags</th>
                 <th class="show-for-large">created</th>
@@ -13,7 +13,7 @@
             </tr>
             {{ range .bookmarks }}
             <tr>
-                <th>{{ .ID }}</th>
+                <th><a class="button" href="/edit/{{ .ID }}">edit</a></th>
                 <td>
                     <a href="{{ .URL }}">{{ .Info.Title }}</a>
                     <br>

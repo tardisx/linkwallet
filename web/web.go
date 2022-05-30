@@ -174,7 +174,7 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 
 	r.POST("/tags", func(c *gin.Context) {
 
-		newTag := c.PostForm("tag")
+		newTag := c.PostForm("tag") // new tag
 		oldTags := strings.Split(c.PostForm("tags_hidden"), "|")
 
 		remove := c.Query("remove")
@@ -232,6 +232,66 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 
 		c.HTML(http.StatusOK,
 			"_layout.html", meta,
+		)
+	})
+
+	r.GET("/edit/:id", func(c *gin.Context) {
+		bookmarkIDstring := c.Param("id")
+		bookmarkID, ok := strconv.ParseUint(bookmarkIDstring, 10, 64)
+		if ok != nil {
+			c.String(http.StatusBadRequest, "bad id")
+			return
+		}
+
+		bookmark := bmm.LoadBookmarkByID(bookmarkID)
+		meta := gin.H{"page": "edit", "bookmark": bookmark, "tw": gin.H{"tags": bookmark.Tags, "tags_hidden": strings.Join(bookmark.Tags, "|")}}
+
+		c.HTML(http.StatusOK,
+			"_layout.html", meta,
+		)
+	})
+
+	r.POST("/edit/:id", func(c *gin.Context) {
+		bookmarkIDstring := c.Param("id")
+		bookmarkID, ok := strconv.ParseUint(bookmarkIDstring, 10, 64)
+		if ok != nil {
+			c.String(http.StatusBadRequest, "bad id")
+			return
+		}
+
+		bookmark := bmm.LoadBookmarkByID(bookmarkID)
+
+		// freshen tags
+		if c.PostForm("tags_hidden") == "" {
+			// empty
+			bookmark.Tags = []string{}
+		} else {
+			bookmark.Tags = strings.Split(c.PostForm("tags_hidden"), "|")
+		}
+		bmm.SaveBookmark(&bookmark)
+
+		meta := gin.H{"page": "edit", "bookmark": bookmark, "tw": gin.H{"tags": bookmark.Tags, "tags_hidden": strings.Join(bookmark.Tags, "|")}}
+
+		c.HTML(http.StatusOK,
+			"edit_form.html", meta,
+		)
+	})
+
+	r.DELETE("/edit/:id", func(c *gin.Context) {
+		bookmarkIDstring := c.Param("id")
+		bookmarkID, ok := strconv.ParseUint(bookmarkIDstring, 10, 64)
+		if ok != nil {
+			c.String(http.StatusBadRequest, "bad id")
+			return
+		}
+
+		bookmark := bmm.LoadBookmarkByID(bookmarkID)
+		err := bmm.DeleteBookmark(&bookmark)
+		if err != nil {
+			panic(err)
+		}
+		c.HTML(http.StatusOK,
+			"edit_form_deleted.html", nil,
 		)
 	})
 

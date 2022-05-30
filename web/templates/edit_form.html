@@ -1,0 +1,32 @@
+
+<form onsubmit="return false;" id="edit-form" hx-target="#edit-form">
+    <table>
+        <tr>
+            <th>Title</th>
+            <td>{{ .bookmark.Info.Title }}</td>
+        </tr>
+        <tr>
+            <th>URL</th>
+            <td>{{ .bookmark.URL }}</td>
+        </tr>
+        <tr>
+            <th>tags</th>
+            <td>
+                {{ template "tags_widget.html" .tw }}
+            </td>
+        </tr>
+
+        <tr>
+            <th>Created</th>
+            <td>{{ (nicetime .bookmark.TimestampCreated).HumanDuration }}</td>
+        </tr>
+        <tr>
+            <th>Last Scraped</th>
+            <td>{{ (nicetime .bookmark.TimestampLastScraped).HumanDuration }}</td>
+        </tr>
+    </table>
+    <p>
+        <button type="button" hx-confirm="Delete this bookmark permanently?" hx-delete="/edit/{{.bookmark.ID}}" class="alert button">delete</button>
+        <button type="button" class="button" hx-post="/edit/{{.bookmark.ID}}">save</button>
+    </p>
+</form>

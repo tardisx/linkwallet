@@ -53,6 +53,8 @@
       {{ template "manage.html" . }}
       {{ else if eq .page "config" }}
       {{ template "config.html" . }}
+      {{ else if eq .page "edit" }}
+      {{ template "edit.html" . }}
       {{ end }}
       {{/* template "foundation_sample.html" . */}}
     </div>

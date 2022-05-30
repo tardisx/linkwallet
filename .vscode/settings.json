@@ -6,6 +6,7 @@
         "linkwallet",
         "nicetime",
         "serialised",
-        "stopword"
+        "stopword",
+        "Upsert"
     ]
 }

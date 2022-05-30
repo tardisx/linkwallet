@@ -45,7 +45,10 @@ func (m *BookmarkManager) DeleteBookmark(bm *entity.Bookmark) error {
 		return fmt.Errorf("bookmark does not exist")
 	}
 
+	// delete it
 	m.db.store.DeleteMatching(bm, bolthold.Where("ID").Eq(bm.ID))
+	// delete all the index entries
+	m.db.UpdateIndexForWordsByID([]string{}, bm.ID)
 	return nil
 }
 

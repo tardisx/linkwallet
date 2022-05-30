@@ -4,6 +4,7 @@
         "colly",
         "incpatch",
         "linkwallet",
+        "nicetime",
         "serialised",
         "stopword"
     ]

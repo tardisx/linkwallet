@@ -78,4 +78,17 @@ func TestAddRemove(t *testing.T) {
 		t.Error("did not get result when should")
 	}
 
+	err = bmm.DeleteBookmark(&bm)
+	if err != nil {
+		t.Errorf("got error when deleting: %s", err)
+	}
+
+	searchRes, err = bmm.Search("rabbit")
+	if err != nil {
+		t.Errorf("search returned %s", err)
+	}
+	if len(searchRes) != 0 {
+		t.Error("rabbit should be gone from index")
+	}
+
 }

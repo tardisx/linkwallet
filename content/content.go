@@ -22,7 +22,6 @@ func FetchPageInfo(bm entity.Bookmark) entity.PageInfo {
 	c := colly.NewCollector()
 	c.SetRequestTimeout(5 * time.Second)
 
-	// On every a element which has href attribute call callback
 	c.OnHTML("p,h1,h2,h3,h4,h5,h6,li", func(e *colly.HTMLElement) {
 		info.RawText = info.RawText + e.Text + "\n"
 	})
@@ -32,13 +31,13 @@ func FetchPageInfo(bm entity.Bookmark) entity.PageInfo {
 	})
 
 	c.OnResponse(func(r *colly.Response) {
-		info.StatusCode = r.StatusCode // https://adventofcode.com/2016/day/25
+		info.StatusCode = r.StatusCode
 		info.Size = len(r.Body)
 		log.Printf("content type for %s: %s (%d)", r.Request.URL.String(), r.Headers.Get("Content-Type"), info.Size)
 
 	})
 
-	// // Before making a request print "Visiting ..."
+	// Before making a request print "Visiting ..."
 	c.OnRequest(func(r *colly.Request) {
 		log.Println("Visiting", r.URL.String())
 	})
@@ -47,7 +46,6 @@ func FetchPageInfo(bm entity.Bookmark) entity.PageInfo {
 		log.Printf("error for %s: %s", r.Request.URL.String(), err)
 	})
 
-	// Start scraping on https://hackerspaces.org
 	c.Visit(url)
 	return info
 }

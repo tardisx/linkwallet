@@ -33,13 +33,13 @@ func FetchPageInfo(bm entity.Bookmark) entity.PageInfo {
 	c.OnResponse(func(r *colly.Response) {
 		info.StatusCode = r.StatusCode
 		info.Size = len(r.Body)
-		log.Printf("content type for %s: %s (%d)", r.Request.URL.String(), r.Headers.Get("Content-Type"), info.Size)
+		//	log.Printf("content type for %s: %s (%d)", r.Request.URL.String(), r.Headers.Get("Content-Type"), info.Size)
 
 	})
 
 	// Before making a request print "Visiting ..."
 	c.OnRequest(func(r *colly.Request) {
-		log.Println("Visiting", r.URL.String())
+		// log.Println("Visiting", r.URL.String())
 	})
 
 	c.OnError(func(r *colly.Response, err error) {

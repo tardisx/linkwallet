@@ -18,9 +18,10 @@ func (db *DB) UpdateIndexForWordsByID(words []string, id uint64) {
 	if err != nil {
 		panic(err)
 	}
-
-	db.store.TxForEach(txn, &bolthold.Query{}, func(wi *entity.WordIndex) {
+	db.store.TxForEach(txn, &bolthold.Query{}, func(wi *entity.WordIndex) error {
 		delete(wi.Bitmap, id)
+		db.store.TxUpdate(txn, "word_index_"+wi.Word, wi)
+		return nil
 	})
 
 	// adding
@@ -36,7 +37,6 @@ func (db *DB) UpdateIndexForWordsByID(words []string, id uint64) {
 		}
 
 		thisWI.Bitmap[id] = true
-		// log.Printf("BM: %v", thisWI.Bitmap)
 		err = db.store.TxUpsert(txn, "word_index_"+word, thisWI)
 		if err != nil {
 			panic(err)
@@ -49,7 +49,6 @@ func (db *DB) UpdateIndexForWordsByID(words []string, id uint64) {
 				panic(err)
 			}
 		}
-
 	}
 
 	txn.Commit()

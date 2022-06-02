@@ -39,7 +39,7 @@ nfpms:
     formats:
       # - apk
       - deb
-      # - rpm
+      - rpm
     dependencies:
     recommends:
     suggests:

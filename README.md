@@ -32,6 +32,14 @@ A self-hosted bookmark database with full-text page content search.
     mountpoint.
 * Run `docker-compose up -d`
 
+## Packages (deb/rpm)
+
+* Download the .deb or .rpm from the releases
+* Install using apt/dpkg/rpm
+  * Automatically creates a systemd service, enabled and started
+  * Runs as user `linkwallet`
+  * Database stored in `/var/lib/linkwallet`
+
 ## Binary
 
 * Download the appropriate binary from the releases page
@@ -43,10 +51,6 @@ A self-hosted bookmark database with full-text page content search.
 
 * Checkout the code
 * `go build cmd/linkwallet/linkwallet.go`
-
-## deb/rpm packages
-
-Coming soon.
 
 # Using
 

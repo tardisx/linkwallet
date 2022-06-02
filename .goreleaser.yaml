@@ -21,7 +21,7 @@ dockers:
     build_flag_templates:
     - "--platform=linux/amd64"
 nfpms:
-  - 
+  -
     id: default
     package_name: linkwallet
     file_name_template: "{{ .ConventionalFileName }}"

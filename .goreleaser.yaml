@@ -20,6 +20,57 @@ dockers:
     - "tardisx/linkwallet"
     build_flag_templates:
     - "--platform=linux/amd64"
+nfpms:
+  - 
+    id: default
+    package_name: linkwallet
+    file_name_template: "{{ .ConventionalFileName }}"
+    builds:
+    replacements:
+      darwin: darwin
+      linux: linux
+      windows: windows
+      386: 386
+      amd64: amd64_v1
+    vendor:
+    maintainer: Justin Hawkins <justin@hawkins.id.au>
+    description: |-
+       A self-hosted bookmark database with full-text page content search.
+    formats:
+      # - apk
+      - deb
+      # - rpm
+    dependencies:
+    recommends:
+    suggests:
+    conflicts:
+    replaces:
+    epoch:
+    prerelease:
+    version_metadata:
+    release:
+    section: default
+    priority: extra
+    meta: false
+    scripts:
+      preinstall: "etc/preinstall.sh"
+      postinstall: "etc/postinstall.sh"
+      preremove: "etc/preremove.sh"
+      postremove: "etc/postremove.sh"
+    contents:
+      - src: etc/linkwallet.service
+        dst: /lib/systemd/system/linkwallet.service
+        file_info:
+          mode: 0664
+          #mtime: 2008-01-02T15:04:05Z
+          owner: root
+          group: root
+      - dst: /var/lib/linkwallet
+        type: dir
+        file_info:
+          mode: 0700
+          owner: linkwallet
+          group: linkwallet
 archives:
   - replacements:
       darwin: Darwin

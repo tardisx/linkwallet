@@ -1,0 +1,10 @@
+[Unit]
+Description=linkwallet
+
+[Service]
+ExecStart=/usr/bin/linkwallet -db-path /var/lib/linkwallet/linkwallet.db
+User=linkwallet
+Group=linkwallet
+
+[Install]
+WantedBy=multi-user.target

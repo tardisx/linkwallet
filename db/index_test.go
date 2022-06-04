@@ -92,3 +92,52 @@ func TestAddRemove(t *testing.T) {
 	}
 
 }
+
+func TestTagIndexing(t *testing.T) {
+	ts := newTestServer()
+	defer ts.Close()
+	serverResponse = "<p>the quick brown fox</p>"
+
+	db := DB{}
+	f, _ := os.CreateTemp("", "test_boltdb_*")
+	f.Close()
+	defer os.Remove(f.Name())
+	db.Open(f.Name())
+
+	bmm := NewBookmarkManager(&db)
+	bm := entity.Bookmark{URL: ts.URL}
+
+	err := bmm.AddBookmark(&bm)
+	if err != nil {
+		t.Fatalf("error adding: %s", err)
+	}
+	if bm.ID == 0 {
+		t.Error("bookmark did not get an id")
+	}
+	err = bmm.ScrapeAndIndex(&bm)
+	if err != nil {
+		t.Errorf("scrape index returned %s", err)
+	}
+
+	searchRes, err := bmm.Search("fox")
+	if err != nil {
+		t.Errorf("search returned %s", err)
+	}
+	if len(searchRes) != 1 {
+		t.Error("did not get one id")
+	}
+
+	// add a tag
+	bm.Tags = []string{"sloth"}
+	err = bmm.ScrapeAndIndex(&bm)
+	if err != nil {
+		t.Errorf("scrape index returned %s", err)
+	}
+	searchRes, err = bmm.Search("sloth")
+	if err != nil {
+		t.Errorf("search returned %s", err)
+	}
+	if len(searchRes) != 1 {
+		t.Error("did not get one id for sloth")
+	}
+}

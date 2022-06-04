@@ -131,8 +131,6 @@ func (m *BookmarkManager) Search(query string) ([]entity.Bookmark, error) {
 		}
 	}
 
-	// log.Printf("counts: %#v", counts)
-
 	for k, v := range counts {
 		if v == uint8(len(words)) {
 			rets = append(rets, k)
@@ -157,6 +155,7 @@ func (m *BookmarkManager) ScrapeAndIndex(bm *entity.Bookmark) error {
 	}
 
 	words := content.Words(bm)
+	words = append(words, bm.Tags...)
 	log.Printf("index for %d %s (%d words)", bm.ID, bm.URL, len(words))
 	m.db.UpdateIndexForWordsByID(words, bm.ID)
 

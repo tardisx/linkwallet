@@ -70,5 +70,4 @@ will not work.
   * delete
   * sorting
 * More tag options
-  * search for tags
   * bookmarklet with pre-filled tags

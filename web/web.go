@@ -95,6 +95,7 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 
 	r.POST("/config", func(c *gin.Context) {
 		config.BaseURL = c.PostForm("baseurl")
+		config.BaseURL = strings.TrimRight(config.BaseURL, "/")
 		cmm.SaveConfig(&config)
 		meta := gin.H{"config": config}
 

@@ -67,7 +67,7 @@ will not work.
 # Roadmap
 
 * More options when managing links
-  * delete
   * sorting
 * More tag options
   * bookmarklet with pre-filled tags
+  * search/filter on tags

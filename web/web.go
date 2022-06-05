@@ -18,6 +18,7 @@ import (
 
 	"github.com/hako/durafmt"
 
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 )
 
@@ -67,6 +68,7 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 	}
 
 	r.Use(headersByURI())
+	r.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedExtensions([]string{".pdf", ".mp4"})))
 
 	r.SetHTMLTemplate(templ)
 	r.StaticFS("/assets", http.FS(staticFS))

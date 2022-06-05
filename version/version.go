@@ -8,7 +8,7 @@ import (
 	"golang.org/x/mod/semver"
 )
 
-const Tag = "v0.0.19"
+const Tag = "v0.0.20"
 
 var versionInfo struct {
 	Local struct {

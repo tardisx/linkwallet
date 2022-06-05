@@ -8,7 +8,7 @@ import (
 	"golang.org/x/mod/semver"
 )
 
-const Tag = "v0.0.17"
+const Tag = "v0.0.18"
 
 var versionInfo struct {
 	Local struct {
@@ -40,7 +40,14 @@ func UpgradeAvailable() (bool, string) {
 		return true, versionInfo.Remote.Tag
 	}
 	return false, ""
+}
 
+func UpgradeAvailableString() string {
+	upgrade, ver := UpgradeAvailable()
+	if upgrade {
+		return ver
+	}
+	return ""
 }
 
 func UpdateVersionInfo() {

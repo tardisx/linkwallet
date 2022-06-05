@@ -51,7 +51,7 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 	}
 
 	// templ := template.Must(template.New("").Funcs(template.FuncMap{"dict": dictHelper}).ParseFS(templateFiles, "templates/*.html"))
-	templ := template.Must(template.New("").Funcs(template.FuncMap{"nicetime": niceTime, "niceURL": niceURL, "join": strings.Join, "version": version.Is}).ParseFS(templateFiles, "templates/*.html"))
+	templ := template.Must(template.New("").Funcs(template.FuncMap{"nicetime": niceTime, "niceURL": niceURL, "join": strings.Join, "version": version.Is, "newVersion": version.UpgradeAvailableString}).ParseFS(templateFiles, "templates/*.html"))
 
 	config, err := cmm.LoadConfig()
 	if err != nil {

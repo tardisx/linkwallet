@@ -34,10 +34,17 @@
     </div>
     <div class="top-bar-right">
       <ul class="menu">
+        {{ if newVersion }}
+        <li>
+          <div><a href="https://github.com/tardisx/linkwallet/releases/tag/{{ newVersion }}">{{ newVersion }} available</a></div>
+        </li>
+        {{ end }}
+        <li class="menu-text">
+          {{ version }}
+        </li>
         <li>
           <a href="https://github.com/tardisx/linkwallet">
-            {{ version }}
-            <img src="/assets/image/GitHub-Mark-32px.png" />
+            <img src="/assets/image/GitHub-Mark-32px.png" width="16px" height="16px"/>
           </a>
         </li>
         <!-- <li><input type="search" placeholder="Search"></li>

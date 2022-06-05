@@ -9,7 +9,7 @@
         <p>Then whenever you are on a webpage you would like to bookmark, just
             click the bookmarklet.</p>
 
-        <a class="button" href="javascript:void(window.open('{{ .config.BaseURL }}/bookmarklet?url=' +encodeURIComponent(window.location), 'windowName', 'width=640,height=480'))">Bookmarklet</a>
+        <a class="button" href="javascript:void(window.open('{{ .config.BaseURL }}/bookmarklet?url=' +encodeURIComponent(window.location)+'&title='+encodeURIComponent(document.title), 'windowName', 'width=640,height=480'))">Bookmarklet</a>
 
 
         {{ else }}

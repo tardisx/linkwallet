@@ -7,6 +7,7 @@ type Bookmark struct {
 	URL                  string
 	Info                 PageInfo
 	Tags                 []string
+	PreserveTitle        bool
 	TimestampCreated     time.Time
 	TimestampLastScraped time.Time
 }

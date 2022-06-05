@@ -3,7 +3,11 @@
     <table>
         <tr>
             <th>Title</th>
-            <td>{{ .bookmark.Info.Title }}</td>
+            <td>
+                <input type="text" name="title" {{ if not .bookmark.PreserveTitle }}disabled{{ end }} id="title" value="{{ .bookmark.Info.Title }}">
+                <input id="checkbox" name="override_title" value="on" {{ if  .bookmark.PreserveTitle }}checked{{end}} type="checkbox" _="on click toggle @disabled on #title">
+                <label for="checkbox">override scraped title (ignore page title when scraping)</label>
+            </td>
         </tr>
         <tr>
             <th>URL</th>

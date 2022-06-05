@@ -147,6 +147,10 @@ func (m *BookmarkManager) ScrapeAndIndex(bm *entity.Bookmark) error {
 
 	log.Printf("Start scrape for %s", bm.URL)
 	info := content.FetchPageInfo(*bm)
+	// keep the existing title if necessary
+	if bm.PreserveTitle {
+		info.Title = bm.Info.Title
+	}
 	bm.Info = info
 	bm.TimestampLastScraped = time.Now()
 	err := m.SaveBookmark(bm)
@@ -154,12 +158,16 @@ func (m *BookmarkManager) ScrapeAndIndex(bm *entity.Bookmark) error {
 		panic(err)
 	}
 
+	m.UpdateIndexForBookmark(bm)
+	return nil
+
+}
+
+func (m *BookmarkManager) UpdateIndexForBookmark(bm *entity.Bookmark) {
 	words := content.Words(bm)
 	words = append(words, bm.Tags...)
 	log.Printf("index for %d %s (%d words)", bm.ID, bm.URL, len(words))
 	m.db.UpdateIndexForWordsByID(words, bm.ID)
-
-	return nil
 }
 
 func (m *BookmarkManager) QueueScrape(bm *entity.Bookmark) {

@@ -161,7 +161,6 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 			}
 		}
 
-		log.Printf("well done %v, %d", totalErrors, added)
 		data := gin.H{
 			"added":  added,
 			"errors": totalErrors,
@@ -262,6 +261,16 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 
 		bookmark := bmm.LoadBookmarkByID(bookmarkID)
 
+		// update title and override title
+		overrideTitle := c.PostForm("override_title")
+		if overrideTitle != "" {
+			title := c.PostForm("title")
+			bookmark.Info.Title = title
+			bookmark.PreserveTitle = true
+		} else {
+			bookmark.PreserveTitle = false
+		}
+
 		// freshen tags
 		if c.PostForm("tags_hidden") == "" {
 			// empty
@@ -269,7 +278,9 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 		} else {
 			bookmark.Tags = strings.Split(c.PostForm("tags_hidden"), "|")
 		}
+
 		bmm.SaveBookmark(&bookmark)
+		bmm.UpdateIndexForBookmark(&bookmark) // because title may have changed
 
 		meta := gin.H{"page": "edit", "bookmark": bookmark, "tw": gin.H{"tags": bookmark.Tags, "tags_hidden": strings.Join(bookmark.Tags, "|")}}
 

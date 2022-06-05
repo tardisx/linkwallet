@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"time"
 
 	"github.com/tardisx/linkwallet/db"
 	"github.com/tardisx/linkwallet/version"
@@ -27,7 +28,12 @@ func main() {
 	bmm := db.NewBookmarkManager(&dbh)
 	cmm := db.NewConfigManager(&dbh)
 
-	go func() { version.UpdateVersionInfo() }()
+	go func() {
+		for {
+			version.UpdateVersionInfo()
+			time.Sleep(time.Hour * 6)
+		}
+	}()
 
 	log.Printf("linkwallet version %s starting", version.Is())
 

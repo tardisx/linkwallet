@@ -110,7 +110,7 @@ func (m *BookmarkManager) LoadBookmarksByIDs(ids []uint64) []entity.Bookmark {
 	return ret
 }
 
-func (m *BookmarkManager) Search(query string) ([]entity.Bookmark, error) {
+func (m *BookmarkManager) Search(query string, tags []string) ([]entity.Bookmark, error) {
 	rets := make([]uint64, 0, 0)
 
 	counts := make(map[uint64]uint8)
@@ -140,7 +140,23 @@ func (m *BookmarkManager) Search(query string) ([]entity.Bookmark, error) {
 		}
 	}
 
+	if tags != nil && len(tags) > 0 {
+		rets = m.LimitToIdsWithTags(rets, tags)
+	}
 	return m.LoadBookmarksByIDs(rets), nil
+}
+
+func (m *BookmarkManager) LimitToIdsWithTags(ids []uint64, tags []string) []uint64 {
+	outIds := []uint64{}
+	err := m.db.store.ForEach(bolthold.Where("ID").ContainsAny(bolthold.Slice(ids)...).And("Tags").ContainsAll(bolthold.Slice(tags)...),
+		func(bm *entity.Bookmark) error {
+			outIds = append(outIds, bm.ID)
+			return nil
+		})
+	if err != nil {
+		panic(err)
+	}
+	return outIds
 }
 
 func (m *BookmarkManager) ScrapeAndIndex(bm *entity.Bookmark) error {

@@ -1,4 +1,4 @@
-<div id="label-widget">
+<div id="label-widget" >
     <div class="grid-x grid-padding-x">
         <div class="small-9 medium-10 large-5 cell" 
             hx-post="/tags"
@@ -9,7 +9,7 @@
 
             <input id="tag-entry" type="text" name="tag" placeholder="enter tags" />
         </div>
-        <div class="small-12 large-6 cell">
+        <div class="small-12 large-6 cell" id="tags-list">
             {{ range .tags }}
             <a href="#"
                class=""
@@ -20,7 +20,7 @@
                <span class="label primary">{{ . }}</span> 
             
             {{ end }}
-            <input type="hidden" name="tags_hidden" value="{{ .tags_hidden }}">
+            <input _="on load send tag_update to #manage-search" type="hidden" id="tags-hidden" name="tags_hidden" value="{{ .tags_hidden }}">
         </div>    
     </div>
 </div>

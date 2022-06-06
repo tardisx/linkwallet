@@ -1,38 +1,20 @@
-<div class="grid-x grid-padding-x">
+<div class="grid-x grid-padding-x" id="manage">
     <div class="large-12 cell">
 
         <h5>Manage links</h5>
 
-        <table>
-            <tr>
-                <th>&nbsp;</th>
-                <th>title/url</th>
-                <th>tags</th>
-                <th class="show-for-large">created</th>
-                <th class="show-for-large">scraped</th>
-            </tr>
-            {{ range .bookmarks }}
-            <tr>
-                <th><a class="button" href="/edit/{{ .ID }}">edit</a></th>
-                <td>
-                    <a href="{{ .URL }}">{{ .Info.Title }}</a>
-                    <br>
-                    <a href="{{ .URL }}">{{ niceURL .URL }}</a>
-                </td>
-                <td>
-                    {{ range .Tags }}
-                    <span class="label primary">{{ . }}</span>
-                    {{ end }}
-                </td>
-                <td class="show-for-large">{{ (nicetime .TimestampCreated).HumanDuration }} ago</td>
-                <td class="show-for-large">{{ (nicetime .TimestampLastScraped).HumanDuration }} ago</td>
-
-                <td>
-                    <a class="button" hx-swap="outerHTML" hx-post="/scrape/{{ .ID }}">scrape</button>
-                </td>
-            </tr>
-            {{ end }}
-        </table>
+        <form onsubmit="return false"> 
+            <div class="grid-x grid-padding-x">
+                <div class="large-12 cell">
+                    <label>Filter</label>
+                    <input type="text" name="query" placeholder="" hx-post="/manage/results" hx-swap="outerHTML"
+                        hx-trigger="keyup changed delay:500ms, tag_update" hx-target="#manage-results"
+                        hx-indicator="#htmx-indicator-search" id="manage-search" />
+                </div>
+            </div>
+            {{ template "tags_widget.html" . }}
+        </form>
+        {{ template "manage_results.html" . }}
      
     </div>
 </div>

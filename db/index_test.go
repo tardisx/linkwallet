@@ -47,7 +47,7 @@ func TestAddRemove(t *testing.T) {
 		t.Errorf("scrape index returned %s", err)
 	}
 
-	searchRes, err := bmm.Search("fox")
+	searchRes, err := bmm.Search("fox", nil)
 	if err != nil {
 		t.Errorf("search returned %s", err)
 	}
@@ -62,7 +62,7 @@ func TestAddRemove(t *testing.T) {
 		t.Errorf("scrape index returned %s", err)
 	}
 
-	searchRes, err = bmm.Search("fox")
+	searchRes, err = bmm.Search("fox", nil)
 	if err != nil {
 		t.Errorf("search returned %s", err)
 	}
@@ -70,7 +70,7 @@ func TestAddRemove(t *testing.T) {
 		t.Error("got result when should not")
 	}
 
-	searchRes, err = bmm.Search("rabbit")
+	searchRes, err = bmm.Search("rabbit", nil)
 	if err != nil {
 		t.Errorf("search returned %s", err)
 	}
@@ -83,7 +83,7 @@ func TestAddRemove(t *testing.T) {
 		t.Errorf("got error when deleting: %s", err)
 	}
 
-	searchRes, err = bmm.Search("rabbit")
+	searchRes, err = bmm.Search("rabbit", nil)
 	if err != nil {
 		t.Errorf("search returned %s", err)
 	}
@@ -119,7 +119,7 @@ func TestTagIndexing(t *testing.T) {
 		t.Errorf("scrape index returned %s", err)
 	}
 
-	searchRes, err := bmm.Search("fox")
+	searchRes, err := bmm.Search("fox", nil)
 	if err != nil {
 		t.Errorf("search returned %s", err)
 	}
@@ -133,7 +133,7 @@ func TestTagIndexing(t *testing.T) {
 	if err != nil {
 		t.Errorf("scrape index returned %s", err)
 	}
-	searchRes, err = bmm.Search("sloth")
+	searchRes, err = bmm.Search("sloth", nil)
 	if err != nil {
 		t.Errorf("search returned %s", err)
 	}

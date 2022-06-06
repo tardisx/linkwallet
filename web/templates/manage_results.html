@@ -1,0 +1,31 @@
+
+        <table id="manage-results">
+            <tr>
+                <th>&nbsp;</th>
+                <th>title/url</th>
+                <th>tags</th>
+                <th class="show-for-large">created</th>
+                <th class="show-for-large">scraped</th>
+            </tr>
+            {{ range .bookmarks }}
+            <tr>
+                <th><a class="button" href="/edit/{{ .ID }}">edit</a></th>
+                <td>
+                    <a href="{{ .URL }}">{{ .Info.Title }}</a>
+                    <br>
+                    <a href="{{ .URL }}">{{ niceURL .URL }}</a>
+                </td>
+                <td>
+                    {{ range .Tags }}
+                    <span class="label primary">{{ . }}</span>
+                    {{ end }}
+                </td>
+                <td class="show-for-large">{{ (nicetime .TimestampCreated).HumanDuration }} ago</td>
+                <td class="show-for-large">{{ (nicetime .TimestampLastScraped).HumanDuration }} ago</td>
+
+                <td>
+                    <a class="button" hx-swap="outerHTML" hx-post="/scrape/{{ .ID }}">scrape</button>
+                </td>
+            </tr>
+            {{ end }}
+        </table>

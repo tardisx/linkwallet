@@ -18,6 +18,11 @@ type BookmarkManager struct {
 	scrapeQueue chan *entity.Bookmark
 }
 
+type SearchOptions struct {
+	Query string
+	Tags  []string
+}
+
 func NewBookmarkManager(db *DB) *BookmarkManager {
 	return &BookmarkManager{db: db, scrapeQueue: make(chan *entity.Bookmark)}
 }
@@ -94,28 +99,12 @@ func (m *BookmarkManager) LoadBookmarkByID(id uint64) entity.Bookmark {
 	return ret
 }
 
-func (m *BookmarkManager) LoadBookmarksByIDs(ids []uint64) []entity.Bookmark {
-	// log.Printf("loading %v", ids)
-	ret := make([]entity.Bookmark, 0, 0)
+func (m *BookmarkManager) Search(opts SearchOptions) ([]entity.Bookmark, error) {
 
-	s := make([]interface{}, len(ids))
-	for i, v := range ids {
-		s[i] = v
-	}
-
-	err := m.db.store.Find(&ret, bolthold.Where("ID").In(s...))
-	if err != nil {
-		panic(err)
-	}
-	return ret
-}
-
-func (m *BookmarkManager) Search(query string, tags []string) ([]entity.Bookmark, error) {
-	rets := make([]uint64, 0, 0)
-
+	// first get a list of all the ids that match our query
+	idsMatchingQuery := make([]uint64, 0, 0)
 	counts := make(map[uint64]uint8)
-
-	words := content.StringToSearchWords(query)
+	words := content.StringToSearchWords(opts.Query)
 
 	for _, word := range words {
 		var wi *entity.WordIndex
@@ -133,30 +122,33 @@ func (m *BookmarkManager) Search(query string, tags []string) ([]entity.Bookmark
 
 	for k, v := range counts {
 		if v == uint8(len(words)) {
-			rets = append(rets, k)
-			if len(rets) > 10 {
+			idsMatchingQuery = append(idsMatchingQuery, k)
+			if len(idsMatchingQuery) > 10 {
 				break
 			}
 		}
 	}
 
-	if tags != nil && len(tags) > 0 {
-		rets = m.LimitToIdsWithTags(rets, tags)
+	// now we can do our search
+	bhQuery := bolthold.Query{}
+	if opts.Query != "" {
+		bhQuery = bolthold.Query(*bhQuery.And("ID").In(bolthold.Slice(idsMatchingQuery)...))
 	}
-	return m.LoadBookmarksByIDs(rets), nil
-}
+	if opts.Tags != nil && len(opts.Tags) > 0 {
+		bhQuery = bolthold.Query(*bhQuery.And("Tags").ContainsAll(bolthold.Slice(opts.Tags)...))
+	}
 
-func (m *BookmarkManager) LimitToIdsWithTags(ids []uint64, tags []string) []uint64 {
-	outIds := []uint64{}
-	err := m.db.store.ForEach(bolthold.Where("ID").ContainsAny(bolthold.Slice(ids)...).And("Tags").ContainsAll(bolthold.Slice(tags)...),
+	out := []entity.Bookmark{}
+	err := m.db.store.ForEach(&bhQuery,
 		func(bm *entity.Bookmark) error {
-			outIds = append(outIds, bm.ID)
+			out = append(out, *bm)
 			return nil
 		})
 	if err != nil {
 		panic(err)
 	}
-	return outIds
+
+	return out, nil
 }
 
 func (m *BookmarkManager) ScrapeAndIndex(bm *entity.Bookmark) error {

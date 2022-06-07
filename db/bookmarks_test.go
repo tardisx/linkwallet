@@ -73,7 +73,7 @@ func BenchmarkOneWordSearch(b *testing.B) {
 	bmm := NewBookmarkManager(&dbh)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		bmm.Search("hello", nil)
+		bmm.Search(SearchOptions{Query: "hello"})
 	}
 }
 
@@ -84,7 +84,7 @@ func BenchmarkTwoWordSearch(b *testing.B) {
 	bmm := NewBookmarkManager(&dbh)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		bmm.Search("human relate", nil)
+		bmm.Search(SearchOptions{Query: "human relate"})
 	}
 }
 
@@ -95,6 +95,6 @@ func BenchmarkThreeWordSearch(b *testing.B) {
 	bmm := NewBookmarkManager(&dbh)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		bmm.Search("human wiki editor", nil)
+		bmm.Search(SearchOptions{Query: "human wiki editor"})
 	}
 }

@@ -46,6 +46,7 @@ type ColumnInfo struct {
 	Name   string
 	Param  string
 	Sorted string
+	Class  string
 }
 
 func (c ColumnInfo) URLString() string {
@@ -123,8 +124,8 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 		meta := gin.H{"config": config, "bookmarks": allBookmarks}
 
 		colTitle := &ColumnInfo{Name: "Title/URL", Param: "title"}
-		colCreated := &ColumnInfo{Name: "Created", Param: "created"}
-		colScraped := &ColumnInfo{Name: "Scraped", Param: "scraped"}
+		colCreated := &ColumnInfo{Name: "Created", Param: "created", Class: "show-for-large"}
+		colScraped := &ColumnInfo{Name: "Scraped", Param: "scraped", Class: "show-for-large"}
 		if sort == "title" {
 			colTitle.Sorted = "asc"
 		}

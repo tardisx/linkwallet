@@ -42,6 +42,28 @@ type Server struct {
 	bmm    *db.BookmarkManager
 }
 
+type ColumnInfo struct {
+	Name   string
+	Param  string
+	Sorted string
+}
+
+func (c ColumnInfo) URLString() string {
+	if c.Sorted == "asc" {
+		return "-" + c.Param
+	}
+	return c.Param
+}
+
+func (c ColumnInfo) TitleArrow() string {
+	if c.Sorted == "asc" {
+		return "↑"
+	} else if c.Sorted == "desc" {
+		return "↓"
+	}
+	return ""
+}
+
 // Create creates a new web server instance and sets up routing.
 func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 
@@ -99,6 +121,35 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 		}
 		allBookmarks, _ := bmm.Search(db.SearchOptions{Query: query, Tags: tags, Sort: sort})
 		meta := gin.H{"config": config, "bookmarks": allBookmarks}
+
+		colTitle := &ColumnInfo{Name: "Title/URL", Param: "title"}
+		colCreated := &ColumnInfo{Name: "Created", Param: "created"}
+		colScraped := &ColumnInfo{Name: "Scraped", Param: "scraped"}
+		if sort == "title" {
+			colTitle.Sorted = "asc"
+		}
+		if sort == "-title" {
+			colTitle.Sorted = "desc"
+		}
+		if sort == "scraped" {
+			colScraped.Sorted = "asc"
+		}
+		if sort == "-scraped" {
+			colScraped.Sorted = "desc"
+		}
+		if sort == "created" {
+			colCreated.Sorted = "asc"
+		}
+		if sort == "-created" {
+			colCreated.Sorted = "desc"
+		}
+
+		cols := gin.H{
+			"title":   colTitle,
+			"created": colCreated,
+			"scraped": colScraped,
+		}
+		meta["column"] = cols
 
 		c.HTML(http.StatusOK,
 			"manage_results.html", meta,

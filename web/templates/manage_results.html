@@ -2,10 +2,10 @@
         <table id="manage-results">
             <tr>
                 <th>&nbsp;</th>
-                <th hx-post="/manage/results?sort=title" hx-target="#manage-results">title/url</th>
+                {{ template "manage_results_column_header.html" .column.title }}
                 <th>tags</th>
-                <th hx-post="/manage/results?sort=created" hx-target="#manage-results" class="show-for-large">created</th>
-                <th hx-post="/manage/results?sort=scraped" hx-target="#manage-results" class="show-for-large">scraped</th>
+                {{ template "manage_results_column_header.html" .column.created }}
+                {{ template "manage_results_column_header.html" .column.scraped }}
             </tr>
             {{ range .bookmarks }}
             <tr>

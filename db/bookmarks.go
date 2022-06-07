@@ -139,15 +139,25 @@ func (m *BookmarkManager) Search(opts SearchOptions) ([]entity.Bookmark, error) 
 		bhQuery = bolthold.Query(*bhQuery.And("Tags").ContainsAll(bolthold.Slice(opts.Tags)...))
 	}
 
-	if opts.Sort == "title" {
-		bhQuery.SortBy("Info.Title")
-	} else if opts.Sort == "created" {
-		bhQuery.SortBy("TimestampCreated")
-	} else if opts.Sort == "scraped" {
-		bhQuery.SortBy("TimestampLastScraped")
+	reverse := false
+	sortOrder := opts.Sort
+	if sortOrder != "" && sortOrder[0] == '-' {
+		reverse = true
+		sortOrder = sortOrder[1:]
+	}
 
+	if sortOrder == "title" {
+		bhQuery.SortBy("Info.Title")
+	} else if sortOrder == "created" {
+		bhQuery.SortBy("TimestampCreated")
+	} else if sortOrder == "scraped" {
+		bhQuery.SortBy("TimestampLastScraped")
 	} else {
 		bhQuery.SortBy("ID")
+	}
+
+	if reverse {
+		bhQuery = *bhQuery.Reverse()
 	}
 
 	out := []entity.Bookmark{}

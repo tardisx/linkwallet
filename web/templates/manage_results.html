@@ -2,10 +2,10 @@
         <table id="manage-results">
             <tr>
                 <th>&nbsp;</th>
-                <th>title/url</th>
+                <th hx-post="/manage/results?sort=title" hx-target="#manage-results">title/url</th>
                 <th>tags</th>
-                <th class="show-for-large">created</th>
-                <th class="show-for-large">scraped</th>
+                <th hx-post="/manage/results?sort=created" hx-target="#manage-results" class="show-for-large">created</th>
+                <th hx-post="/manage/results?sort=scraped" hx-target="#manage-results" class="show-for-large">scraped</th>
             </tr>
             {{ range .bookmarks }}
             <tr>

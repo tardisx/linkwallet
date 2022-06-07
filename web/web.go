@@ -92,13 +92,13 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 	r.POST("/manage/results", func(c *gin.Context) {
 		query := c.PostForm("query")
 		tags := []string{}
+		sort := c.Query("sort")
+
 		if c.PostForm("tags_hidden") != "" {
 			tags = strings.Split(c.PostForm("tags_hidden"), "|")
 		}
-		allBookmarks, _ := bmm.Search(db.SearchOptions{Query: query, Tags: tags})
+		allBookmarks, _ := bmm.Search(db.SearchOptions{Query: query, Tags: tags, Sort: sort})
 		meta := gin.H{"config": config, "bookmarks": allBookmarks}
-
-		log.Printf("query is %s, tags %v", query, tags)
 
 		c.HTML(http.StatusOK,
 			"manage_results.html", meta,

@@ -21,6 +21,7 @@ type BookmarkManager struct {
 type SearchOptions struct {
 	Query string
 	Tags  []string
+	Sort  string
 }
 
 func NewBookmarkManager(db *DB) *BookmarkManager {
@@ -138,10 +139,22 @@ func (m *BookmarkManager) Search(opts SearchOptions) ([]entity.Bookmark, error) 
 		bhQuery = bolthold.Query(*bhQuery.And("Tags").ContainsAll(bolthold.Slice(opts.Tags)...))
 	}
 
+	if opts.Sort == "title" {
+		bhQuery.SortBy("Info.Title")
+	} else if opts.Sort == "created" {
+		bhQuery.SortBy("TimestampCreated")
+	} else if opts.Sort == "scraped" {
+		bhQuery.SortBy("TimestampLastScraped")
+
+	} else {
+		bhQuery.SortBy("ID")
+	}
+
 	out := []entity.Bookmark{}
 	err := m.db.store.ForEach(&bhQuery,
 		func(bm *entity.Bookmark) error {
 			out = append(out, *bm)
+
 			return nil
 		})
 	if err != nil {

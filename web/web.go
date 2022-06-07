@@ -374,6 +374,7 @@ func niceTime(t time.Time) timeVariations {
 		panic(err)
 	}
 	ago := durafmt.Parse(time.Since(t)).LimitFirstN(1).Format(units)
+	ago = strings.ReplaceAll(ago, " ", "")
 
 	return timeVariations{HumanDuration: ago}
 }

@@ -55,7 +55,7 @@ func UpdateVersionInfo() {
 
 	rels, _, err := client.Repositories.ListReleases(context.Background(), "tardisx", "linkwallet", nil)
 	if err != nil {
-		panic(err)
+		return
 	}
 	if len(rels) == 0 {
 		return

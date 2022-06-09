@@ -402,7 +402,10 @@ func cleanupTags(tags []string) []string {
 	keys := make(map[string]struct{})
 	for _, k := range tags {
 		if k != "" && k != "|" {
-			keys[strings.ToLower(k)] = struct{}{}
+			for _, subKey := range strings.Split(k, ",") {
+				subKey := strings.Trim(subKey, " ")
+				keys[strings.ToLower(subKey)] = struct{}{}
+			}
 		}
 	}
 	out := []string{}

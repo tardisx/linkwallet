@@ -1,9 +1,11 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -32,6 +34,12 @@ func NewBookmarkManager(db *DB) *BookmarkManager {
 // if this bookmark already exists (based on URL match).
 // The entity.Bookmark ID field will be updated.
 func (m *BookmarkManager) AddBookmark(bm *entity.Bookmark) error {
+
+	if strings.Index(bm.URL, "https://") != 0 &&
+		strings.Index(bm.URL, "http://") != 0 {
+		return errors.New("URL must begin with http:// or https://")
+	}
+
 	existing := entity.Bookmark{}
 	err := m.db.store.FindOne(&existing, bolthold.Where("URL").Eq(bm.URL))
 	if err != bolthold.ErrNotFound {

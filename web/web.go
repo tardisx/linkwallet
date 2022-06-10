@@ -205,6 +205,13 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 			"bm":    bm,
 			"error": err,
 		}
+
+		if err != nil {
+			data["url"] = url
+			data["tags"] = tags
+			data["tags_hidden"] = c.PostForm("tags_hidden")
+		}
+
 		c.HTML(http.StatusOK, "add_url_form.html", data)
 	})
 	r.POST("/add_bulk", func(c *gin.Context) {

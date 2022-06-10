@@ -2,6 +2,7 @@ package version
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/google/go-github/v44/github"
@@ -18,7 +19,8 @@ var versionInfo struct {
 		Valid bool
 		Tag   string
 	}
-	m sync.Mutex
+	UpgradeReleaseNotes string
+	m                   sync.Mutex
 }
 
 func init() {
@@ -60,9 +62,17 @@ func UpdateVersionInfo() {
 	if len(rels) == 0 {
 		return
 	}
+
 	versionInfo.m.Lock()
 	versionInfo.Remote.Tag = *rels[0].TagName
 	versionInfo.Remote.Valid = true
+	versionInfo.UpgradeReleaseNotes = ""
+	for _, r := range rels {
+		if semver.Compare(versionInfo.Local.Tag, *r.TagName) < 0 {
+			versionInfo.UpgradeReleaseNotes += fmt.Sprintf("Version: %s\n\n%s\n\n", *r.TagName, *r.Body)
+		}
+	}
+
 	versionInfo.m.Unlock()
 
 }

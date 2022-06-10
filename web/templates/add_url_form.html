@@ -6,19 +6,19 @@
 
     <form onsubmit="return false">
         <div class="grid-x grid-padding-x">
-            <div class="large-6 cell">
+            <div class="medium-6 cell">
                 <label>URL</label>
                 <input type="text" name="url" value="{{ .url }}"
                       hx-trigger=""
                 />
             </div>
-            <div class="large-6 cell">
+            <div class="medium-6 cell">
                 {{ template "tags_widget.html" . }}
             </div>
         </div>
         <div class="grid-x grid-padding-x">
             <div class="medium-6 cell">
-                <a href="#" class="button" hx-post="/add"
+                <a href="#" class="button"  hx-post="/add"
                 hx-target="#add-url-form">add</a>
             </div>
         </div>

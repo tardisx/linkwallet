@@ -3,15 +3,16 @@ package version
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/google/go-github/v44/github"
 	"golang.org/x/mod/semver"
 )
 
-const Tag = "v0.0.27"
+const Tag = "v0.0.28"
 
-var versionInfo struct {
+type Info struct {
 	Local struct {
 		Tag string
 	}
@@ -23,36 +24,26 @@ var versionInfo struct {
 	m                   sync.Mutex
 }
 
+var VersionInfo Info
+
 func init() {
-	versionInfo.Remote.Valid = false
-	versionInfo.Local.Tag = Tag
+	VersionInfo.Remote.Valid = false
+	VersionInfo.Local.Tag = Tag
 }
 
-func Is() string {
-	return versionInfo.Local.Tag
-}
-
-func UpgradeAvailable() (bool, string) {
-	versionInfo.m.Lock()
-	defer versionInfo.m.Unlock()
-	if !versionInfo.Remote.Valid {
-		return false, ""
+func (vi *Info) UpgradeAvailable() bool {
+	vi.m.Lock()
+	defer vi.m.Unlock()
+	if !vi.Remote.Valid {
+		return false
 	}
-	if semver.Compare(versionInfo.Local.Tag, versionInfo.Remote.Tag) < 0 {
-		return true, versionInfo.Remote.Tag
+	if semver.Compare(vi.Local.Tag, vi.Remote.Tag) < 0 {
+		return true
 	}
-	return false, ""
+	return false
 }
 
-func UpgradeAvailableString() string {
-	upgrade, ver := UpgradeAvailable()
-	if upgrade {
-		return ver
-	}
-	return ""
-}
-
-func UpdateVersionInfo() {
+func (vi *Info) UpdateVersionInfo() {
 	client := github.NewClient(nil)
 
 	rels, _, err := client.Repositories.ListReleases(context.Background(), "tardisx", "linkwallet", nil)
@@ -63,16 +54,24 @@ func UpdateVersionInfo() {
 		return
 	}
 
-	versionInfo.m.Lock()
-	versionInfo.Remote.Tag = *rels[0].TagName
-	versionInfo.Remote.Valid = true
-	versionInfo.UpgradeReleaseNotes = ""
+	vi.m.Lock()
+	vi.Remote.Tag = *rels[0].TagName
+	vi.Remote.Valid = true
+	vi.UpgradeReleaseNotes = ""
 	for _, r := range rels {
-		if semver.Compare(versionInfo.Local.Tag, *r.TagName) < 0 {
-			versionInfo.UpgradeReleaseNotes += fmt.Sprintf("Version: %s\n\n%s\n\n", *r.TagName, *r.Body)
+		if semver.Compare(VersionInfo.Local.Tag, *r.TagName) < 0 {
+			vi.UpgradeReleaseNotes += fmt.Sprintf("*Version %s*\n\n", *r.TagName)
+			bodyLines := strings.Split(*r.Body, "\n")
+			for _, l := range bodyLines {
+				if strings.Index(l, "#") == 0 && strings.Contains(l, "Changelog") {
+					// do nothing, ignore the changelog heading
+				} else {
+					vi.UpgradeReleaseNotes += l + "\n"
+				}
+			}
 		}
 	}
 
-	versionInfo.m.Unlock()
+	vi.m.Unlock()
 
 }

@@ -1,0 +1,23 @@
+<div class="grid-x grid-padding-x">
+    <div class="large-12 cell">
+
+        <h5>Release info</h5>
+        {{ if not version.Remote.Valid }}
+        <p>GitHub version information not yet fetched.</p>
+        {{ else }}
+        {{ if version.UpgradeAvailable }}
+        <p>
+            A new version is available: 
+            <a href="https://github.com/tardisx/linkwallet/releases/tag/{{ version.Remote.Tag }}">
+                {{ version.Remote.Tag }}
+            </a>
+            (you have {{ version.Local.Tag }}).
+        </p>
+
+        {{ markdown version.UpgradeReleaseNotes }}
+
+        {{ else }}
+        <p>You are currently running the most recent version.</p>
+        {{ end }}
+        {{ end }}
+</div>

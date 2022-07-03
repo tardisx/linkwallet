@@ -30,12 +30,12 @@ func main() {
 
 	go func() {
 		for {
-			version.UpdateVersionInfo()
+			version.VersionInfo.UpdateVersionInfo()
 			time.Sleep(time.Hour * 6)
 		}
 	}()
 
-	log.Printf("linkwallet version %s starting", version.Is())
+	log.Printf("linkwallet version %s starting", version.VersionInfo.Local.Tag)
 
 	server := web.Create(bmm, cmm)
 	go bmm.RunQueue()

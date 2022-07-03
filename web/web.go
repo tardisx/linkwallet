@@ -16,6 +16,7 @@ import (
 	"github.com/tardisx/linkwallet/entity"
 	"github.com/tardisx/linkwallet/version"
 
+	"github.com/gomarkdown/markdown"
 	"github.com/hako/durafmt"
 
 	"github.com/gin-contrib/gzip"
@@ -75,7 +76,14 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 	}
 
 	// templ := template.Must(template.New("").Funcs(template.FuncMap{"dict": dictHelper}).ParseFS(templateFiles, "templates/*.html"))
-	templ := template.Must(template.New("").Funcs(template.FuncMap{"nicetime": niceTime, "niceURL": niceURL, "join": strings.Join, "version": version.Is, "newVersion": version.UpgradeAvailableString}).ParseFS(templateFiles, "templates/*.html"))
+	templ := template.Must(template.New("").Funcs(
+		template.FuncMap{
+			"nicetime": niceTime,
+			"niceURL":  niceURL,
+			"join":     strings.Join,
+			"version":  func() *version.Info { return &version.VersionInfo },
+			"markdown": func(s string) template.HTML { return template.HTML(string(markdown.ToHTML([]byte(s), nil, nil))) },
+		}).ParseFS(templateFiles, "templates/*.html"))
 
 	config, err := cmm.LoadConfig()
 	if err != nil {
@@ -383,6 +391,13 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 		}
 		c.HTML(http.StatusOK,
 			"edit_form_deleted.html", nil,
+		)
+	})
+
+	r.GET("/releaseinfo", func(c *gin.Context) {
+		meta := gin.H{"page": "releaseinfo", "config": config}
+		c.HTML(http.StatusOK,
+			"_layout.html", meta,
 		)
 	})
 

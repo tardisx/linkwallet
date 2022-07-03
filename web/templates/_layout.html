@@ -34,13 +34,12 @@
     </div>
     <div class="top-bar-right">
       <ul class="menu">
-        {{ if newVersion }}
         <li>
-          <div><a href="https://github.com/tardisx/linkwallet/releases/tag/{{ newVersion }}">{{ newVersion }} available</a></div>
-        </li>
-        {{ end }}
-        <li class="menu-text">
-          {{ version }}
+          <a href="/releaseinfo">{{ version.Local.Tag }}
+            {{ if version.UpgradeAvailable }}
+            ❗
+            {{ end }}
+          </a>
         </li>
         <li>
           <a href="https://github.com/tardisx/linkwallet">
@@ -64,6 +63,8 @@
       {{ template "config.html" . }}
       {{ else if eq .page "edit" }}
       {{ template "edit.html" . }}
+      {{ else if eq .page "releaseinfo" }}
+      {{ template "release_info.html" . }}
       {{ end }}
       {{/* template "foundation_sample.html" . */}}
     </div>

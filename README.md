@@ -32,6 +32,11 @@ A self-hosted bookmark database with full-text page content search.
     mountpoint.
 * Run `docker-compose up -d`
 
+To upgrade:
+
+* `docker-compose pull`
+* `docker-compose up -d`
+
 ## Packages (deb/rpm)
 
 * Download the .deb or .rpm from the releases

@@ -179,6 +179,8 @@ func (m *BookmarkManager) Search(opts SearchOptions) ([]entity.Bookmark, error) 
 		panic(err)
 	}
 
+	m.db.IncrementSearches()
+
 	return out, nil
 }
 

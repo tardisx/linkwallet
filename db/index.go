@@ -20,7 +20,20 @@ func (db *DB) UpdateIndexForWordsByID(words []string, id uint64) {
 	}
 	db.store.TxForEach(txn, &bolthold.Query{}, func(wi *entity.WordIndex) error {
 		delete(wi.Bitmap, id)
-		db.store.TxUpdate(txn, "word_index_"+wi.Word, wi)
+		// if the index is now completely empty, nuke it entirely
+		empty := true
+		for _, v := range wi.Bitmap {
+			if v {
+				empty = false
+				break
+			}
+		}
+
+		if empty {
+			db.store.TxDelete(txn, "word_index_"+wi.Word, wi)
+		} else {
+			db.store.TxUpdate(txn, "word_index_"+wi.Word, wi)
+		}
 		return nil
 	})
 

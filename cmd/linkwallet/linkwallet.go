@@ -25,6 +25,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	bmm := db.NewBookmarkManager(&dbh)
 	cmm := db.NewConfigManager(&dbh)
 
@@ -32,6 +33,17 @@ func main() {
 		for {
 			version.VersionInfo.UpdateVersionInfo()
 			time.Sleep(time.Hour * 6)
+		}
+	}()
+
+	// update stats every 5 minutes
+	go func() {
+		for {
+			err := dbh.UpdateBookmarkStats()
+			if err != nil {
+				panic(err)
+			}
+			time.Sleep(time.Minute * 5)
 		}
 	}()
 

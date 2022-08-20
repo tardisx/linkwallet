@@ -1,6 +1,9 @@
 <div class="grid-x grid-padding-x">
     <div class="large-12 cell">
 
+        <h5>Memory Usage</h5>
+        <p>{{ meminfo }}</p>
+
         <h5>Release info</h5>
         {{ if not version.Remote.Valid }}
         <p>GitHub version information not yet fetched.</p>

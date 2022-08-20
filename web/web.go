@@ -14,6 +14,7 @@ import (
 
 	"github.com/tardisx/linkwallet/db"
 	"github.com/tardisx/linkwallet/entity"
+	"github.com/tardisx/linkwallet/meta"
 	"github.com/tardisx/linkwallet/version"
 
 	"github.com/gomarkdown/markdown"
@@ -82,6 +83,7 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 			"niceURL":  niceURL,
 			"join":     strings.Join,
 			"version":  func() *version.Info { return &version.VersionInfo },
+			"meminfo":  meta.MemInfo,
 			"markdown": func(s string) template.HTML { return template.HTML(string(markdown.ToHTML([]byte(s), nil, nil))) },
 		}).ParseFS(templateFiles, "templates/*.html"))
 

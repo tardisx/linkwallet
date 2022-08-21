@@ -35,7 +35,7 @@
     <div class="top-bar-right">
       <ul class="menu">
         <li>
-          <a href="/releaseinfo">{{ version.Local.Tag }}
+          <a href="/info">{{ version.Local.Tag }}
             {{ if version.UpgradeAvailable }}
             ❗
             {{ end }}
@@ -63,8 +63,8 @@
       {{ template "config.html" . }}
       {{ else if eq .page "edit" }}
       {{ template "edit.html" . }}
-      {{ else if eq .page "releaseinfo" }}
-      {{ template "release_info.html" . }}
+      {{ else if eq .page "info" }}
+      {{ template "info.html" . }}
       {{ end }}
       {{/* template "foundation_sample.html" . */}}
     </div>

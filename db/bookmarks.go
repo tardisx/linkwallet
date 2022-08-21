@@ -280,3 +280,12 @@ func (m *BookmarkManager) UpdateContent() {
 		time.Sleep(time.Second * 5)
 	}
 }
+
+func (m *BookmarkManager) Stats() (entity.DBStats, error) {
+	stats := entity.DBStats{}
+	err := m.db.store.Get("stats", &stats)
+	if err != nil && err != bolthold.ErrNotFound {
+		return stats, fmt.Errorf("could not load stats: %s", err)
+	}
+	return stats, nil
+}

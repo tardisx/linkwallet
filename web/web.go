@@ -396,8 +396,12 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 		)
 	})
 
-	r.GET("/releaseinfo", func(c *gin.Context) {
-		meta := gin.H{"page": "releaseinfo", "config": config}
+	r.GET("/info", func(c *gin.Context) {
+		dbStats, err := bmm.Stats()
+		if err != nil {
+			panic("could not load stats for info page")
+		}
+		meta := gin.H{"page": "info", "stats": dbStats, "config": config}
 		c.HTML(http.StatusOK,
 			"_layout.html", meta,
 		)

@@ -32,3 +32,16 @@ func (stats DBStats) String() string {
 	}
 	return out
 }
+
+func (stats DBStats) MostRecentBookmarkInfo() BookmarkInfo {
+	mostRecent := time.Time{}
+	for k := range stats.History {
+		if k.After(mostRecent) {
+			mostRecent = k
+		}
+	}
+	if !mostRecent.IsZero() {
+		return stats.History[mostRecent]
+	}
+	return BookmarkInfo{}
+}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -286,5 +287,11 @@ func (m *BookmarkManager) Stats() (entity.DBStats, error) {
 	if err != nil && err != bolthold.ErrNotFound {
 		return stats, fmt.Errorf("could not load stats: %s", err)
 	}
+	// get the DB size
+	fi, err := os.Stat(m.db.file)
+	if err != nil {
+		return stats, fmt.Errorf("could not load db file size: %s", err)
+	}
+	stats.FileSize = int(fi.Size())
 	return stats, nil
 }

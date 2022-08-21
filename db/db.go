@@ -10,6 +10,7 @@ import (
 
 type DB struct {
 	store *bolthold.Store
+	file  string
 }
 
 func (db *DB) Open(path string) error {
@@ -21,6 +22,7 @@ func (db *DB) Open(path string) error {
 		return fmt.Errorf("cannot open '%s' - %s", path, err)
 	}
 	db.store = store
+	db.file = path
 	return nil
 }
 

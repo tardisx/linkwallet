@@ -8,6 +8,7 @@ import (
 
 type DBStats struct {
 	History  map[time.Time]BookmarkInfo
+	FileSize int
 	Searches int
 }
 

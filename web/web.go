@@ -79,12 +79,13 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 	// templ := template.Must(template.New("").Funcs(template.FuncMap{"dict": dictHelper}).ParseFS(templateFiles, "templates/*.html"))
 	templ := template.Must(template.New("").Funcs(
 		template.FuncMap{
-			"nicetime": niceTime,
-			"niceURL":  niceURL,
-			"join":     strings.Join,
-			"version":  func() *version.Info { return &version.VersionInfo },
-			"meminfo":  meta.MemInfo,
-			"markdown": func(s string) template.HTML { return template.HTML(string(markdown.ToHTML([]byte(s), nil, nil))) },
+			"nicetime":   niceTime,
+			"niceURL":    niceURL,
+			"niceSizeMB": func(s int) string { return fmt.Sprintf("%.1f", float32(s)/1024/1024) },
+			"join":       strings.Join,
+			"version":    func() *version.Info { return &version.VersionInfo },
+			"meminfo":    meta.MemInfo,
+			"markdown":   func(s string) template.HTML { return template.HTML(string(markdown.ToHTML([]byte(s), nil, nil))) },
 		}).ParseFS(templateFiles, "templates/*.html"))
 
 	config, err := cmm.LoadConfig()

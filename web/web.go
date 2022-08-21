@@ -187,6 +187,13 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 	r.POST("/search", func(c *gin.Context) {
 		query := c.PostForm("query")
 
+		// no query, return an empty response
+		if len(query) == 0 {
+			c.Status(http.StatusNoContent)
+			c.Writer.Write([]byte{})
+			return
+		}
+
 		sr, err := bmm.Search(db.SearchOptions{Query: query})
 		data := gin.H{
 			"results": sr,

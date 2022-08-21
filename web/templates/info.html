@@ -7,6 +7,8 @@
             <tr><th>Database disk size</th><td>{{ niceSizeMB .stats.FileSize }}Mb</td></tr>
             <tr><th>Bookmarks</th><td>{{ .stats.MostRecentBookmarkInfo.Bookmarks }}</td></tr>
             <tr><th>Words in index</th><td>{{ .stats.MostRecentBookmarkInfo.IndexedWords }}</td></tr>
+            <tr><th>Total searches</th><td>{{ .stats.Searches }}</td></tr>
+
         </table>
     </div>
     <div class="large-6 medium-12 cell">

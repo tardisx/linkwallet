@@ -90,3 +90,4 @@ changelog:
       - '^docs:'
       - '^test:'
       - '^[Bb]ump'
+      - '^[Cc]lean'

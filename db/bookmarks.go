@@ -100,7 +100,6 @@ func (m *BookmarkManager) SaveBookmark(bm *entity.Bookmark) error {
 func (m *BookmarkManager) LoadBookmarkByID(id uint64) entity.Bookmark {
 	// log.Printf("loading %v", ids)
 	ret := entity.Bookmark{}
-	log.Printf("loading id %d", id)
 	err := m.db.store.Get(id, &ret)
 	if err != nil {
 		panic(err)

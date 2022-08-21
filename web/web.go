@@ -371,7 +371,7 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 		bmm.SaveBookmark(&bookmark)
 		bmm.UpdateIndexForBookmark(&bookmark) // because title may have changed
 
-		meta := gin.H{"page": "edit", "bookmark": bookmark, "tw": gin.H{"tags": bookmark.Tags, "tags_hidden": strings.Join(bookmark.Tags, "|")}}
+		meta := gin.H{"page": "edit", "bookmark": bookmark, "saved": true, "tw": gin.H{"tags": bookmark.Tags, "tags_hidden": strings.Join(bookmark.Tags, "|")}}
 
 		c.HTML(http.StatusOK,
 			"edit_form.html", meta,

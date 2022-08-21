@@ -30,7 +30,10 @@
         </tr>
     </table>
     <p>
-        <button type="button" hx-confirm="Delete this bookmark permanently?" hx-delete="/edit/{{.bookmark.ID}}" class="alert button">delete</button>
-        <button type="button" class="button" hx-post="/edit/{{.bookmark.ID}}">save</button>
+        <button type="button" hx-confirm="Delete this bookmark permanently?" hx-delete="/edit/{{.bookmark.ID}}" class="alert button">Delete</button>
+        <button type="button" class="button" hx-indicator="#saving" hx-post="/edit/{{.bookmark.ID}}"> {{ if .saved }} Saved {{ else }} Save {{ end }}</button>
+        <span id="saving" class="htmx-indicator">
+            <img style="height:1em;" src="/assets/image/beating.gif" /> Saving...
+        </span>
     </p>
 </form>

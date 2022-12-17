@@ -24,6 +24,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/font"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 )
@@ -73,6 +74,12 @@ func (c ColumnInfo) TitleArrow() string {
 
 // Create creates a new web server instance and sets up routing.
 func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
+
+	// Set the default font for graphs
+	plot.DefaultFont = font.Font{
+		Typeface: "Liberation",
+		Variant:  "Mono",
+	}
 
 	// setup routes for the static assets (vendor includes)
 	staticFS, err := fs.Sub(staticFiles, "static")
@@ -420,7 +427,9 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 		)
 	})
 
-	r.GET("/graph", func(c *gin.Context) {
+	r.GET("/graph/:type", func(c *gin.Context) {
+
+		graphType := c.Param("type")
 		p := plot.New()
 
 		dbStats, err := bmm.Stats()
@@ -436,35 +445,54 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 			return sortedKeys[i].Before(sortedKeys[j])
 		})
 
-		p.Title.Text = "Bookmarks over time"
-		p.X.Label.Text = "Date"
-		p.Y.Label.Text = "Bookmarks"
-
 		xTicks := plot.TimeTicks{Format: "2006-01-02"}
 		p.X.Tick.Marker = xTicks
 
-		pts := make(plotter.XYs, len(sortedKeys))
-		for i := range sortedKeys {
-			pts[i].X = float64(sortedKeys[i].Unix())
-			pts[i].Y = float64(dbStats.History[sortedKeys[i]].Bookmarks)
-		}
+		plotPoints(sortedKeys, dbStats, p, graphType)
 
-		l, err := plotter.NewLine(pts)
+		writerTo, err := p.WriterTo(vg.Points(640), vg.Points(480), "png")
 		if err != nil {
-			panic(err)
+			panic("error creating WriterTo: " + err.Error())
 		}
-		p.Add(l)
 
-		writerTo, _ := p.WriterTo(vg.Points(640), vg.Points(480), "png")
-		if err := p.Save(4*vg.Inch, 4*vg.Inch, "points.png"); err != nil {
-			panic(err)
-		}
 		c.Header("Content-Type", "image/png")
 		writerTo.WriteTo(c.Writer)
 
 	})
 
 	return server
+}
+
+func plotPoints(sortedKeys []time.Time, dbStats entity.DBStats, p *plot.Plot, k string) {
+
+	if k == "indexed_words" {
+		p.Title.Text = "Indexed words over time"
+		p.Y.Label.Text = "Words indexed"
+	} else if k == "bookmarks" {
+		p.Title.Text = "Bookmarks over time"
+		p.Y.Label.Text = "Bookmarks"
+	} else {
+		panic("bad k")
+	}
+	p.X.Label.Text = "Date"
+
+	pts := make(plotter.XYs, len(sortedKeys))
+	for i := range sortedKeys {
+		pts[i].X = float64(sortedKeys[i].Unix())
+		if k == "indexed_words" {
+			pts[i].Y = float64(dbStats.History[sortedKeys[i]].IndexedWords)
+		} else if k == "bookmarks" {
+			pts[i].Y = float64(dbStats.History[sortedKeys[i]].Bookmarks)
+		} else {
+			panic("bad key")
+		}
+	}
+
+	l, err := plotter.NewLine(pts)
+	if err != nil {
+		panic(err)
+	}
+	p.Add(l)
 }
 
 // headersByURI sets the headers for some special cases, set a custom long cache time for

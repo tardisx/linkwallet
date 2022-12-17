@@ -6,13 +6,20 @@ require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/gocolly/colly v1.2.0
 	github.com/kljensen/snowball v0.6.0
+	gonum.org/v1/plot v0.12.0
 )
 
 require (
+	git.sr.ht/~sbinet/gg v0.3.1 // indirect
+	github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
+	github.com/go-fonts/liberation v0.2.0 // indirect
+	github.com/go-latex/latex v0.0.0-20210823091927-c0d11ff05a81 // indirect
+	github.com/go-pdf/fpdf v0.6.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
@@ -23,6 +30,7 @@ require (
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	go.etcd.io/bbolt v1.3.6 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
+	golang.org/x/image v0.0.0-20220902085622-e7cb96979f69 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
@@ -46,7 +54,7 @@ require (
 	github.com/timshannon/bolthold v0.0.0-20210913165410-232392fc8a6a
 	golang.org/x/mod v0.5.1
 	golang.org/x/net v0.0.0-20220517181318-183a9ca12b87 // indirect
-	golang.org/x/sys v0.0.0-20220519141025-dcacdad47464 // indirect
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect

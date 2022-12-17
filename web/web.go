@@ -22,6 +22,10 @@ import (
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
 )
 
 //go:embed static/*
@@ -232,6 +236,7 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 
 		c.HTML(http.StatusOK, "add_url_form.html", data)
 	})
+
 	r.POST("/add_bulk", func(c *gin.Context) {
 		urls := c.PostForm("urls")
 
@@ -413,6 +418,50 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 		c.HTML(http.StatusOK,
 			"_layout.html", meta,
 		)
+	})
+
+	r.GET("/graph", func(c *gin.Context) {
+		p := plot.New()
+
+		dbStats, err := bmm.Stats()
+		if err != nil {
+			panic("could not load stats for graph page")
+		}
+
+		sortedKeys := make([]time.Time, 0)
+		for k := range dbStats.History {
+			sortedKeys = append(sortedKeys, k)
+		}
+		sort.Slice(sortedKeys, func(i, j int) bool {
+			return sortedKeys[i].Before(sortedKeys[j])
+		})
+
+		p.Title.Text = "Bookmarks over time"
+		p.X.Label.Text = "Date"
+		p.Y.Label.Text = "Bookmarks"
+
+		xTicks := plot.TimeTicks{Format: "2006-01-02"}
+		p.X.Tick.Marker = xTicks
+
+		pts := make(plotter.XYs, len(sortedKeys))
+		for i := range sortedKeys {
+			pts[i].X = float64(sortedKeys[i].Unix())
+			pts[i].Y = float64(dbStats.History[sortedKeys[i]].Bookmarks)
+		}
+
+		l, err := plotter.NewLine(pts)
+		if err != nil {
+			panic(err)
+		}
+		p.Add(l)
+
+		writerTo, _ := p.WriterTo(vg.Points(640), vg.Points(480), "png")
+		if err := p.Save(4*vg.Inch, 4*vg.Inch, "points.png"); err != nil {
+			panic(err)
+		}
+		c.Header("Content-Type", "image/png")
+		writerTo.WriteTo(c.Writer)
+
 	})
 
 	return server

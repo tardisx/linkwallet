@@ -1,6 +1,24 @@
+
 # linkwallet
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/tardisx/linkwallet)](https://goreportcard.com/report/github.com/tardisx/linkwallet)
+
 A self-hosted bookmark database with full-text page content search.
+
+Searching uses English stemming, providing matches against similar words, in both page
+titles and page content. Searches are lightning fast.
+
+![Search][screenshot_search]
+
+Bookmark content is automatically re-scraped periodically. Tags can be applied (though with 
+the full-text search they are often not needed). Bookmarks can be easily managed, and can be
+imported or exported in bulk.
+
+![Admin][screenshot_admin]
+
+Bookmarks can be added with two clicks via the bookmarklet.
+
+![Bookmarklet][screenshot_bookmarklet]
 
 # Feature list
 
@@ -76,3 +94,8 @@ will not work.
 * More tag options
   * bookmarklet with pre-filled tags
   * search/filter on tags
+
+[screenshot_search]: https://raw.githubusercontent.com/tardisx/linkwallet/main/screenshot_search.png
+[screenshot_admin]: https://raw.githubusercontent.com/tardisx/linkwallet/main/screenshot_admin.png
+[screenshot_bookmarklet]: https://raw.githubusercontent.com/tardisx/linkwallet/main/screenshot_bookmarklet_.png
+

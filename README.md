@@ -97,5 +97,5 @@ will not work.
 
 [screenshot_search]: https://raw.githubusercontent.com/tardisx/linkwallet/main/screenshot_search.png
 [screenshot_admin]: https://raw.githubusercontent.com/tardisx/linkwallet/main/screenshot_admin.png
-[screenshot_bookmarklet]: https://raw.githubusercontent.com/tardisx/linkwallet/main/screenshot_bookmarklet_.png
+[screenshot_bookmarklet]: https://raw.githubusercontent.com/tardisx/linkwallet/main/screenshot_bookmarklet.png
 

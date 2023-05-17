@@ -113,7 +113,7 @@ func (m *BookmarkManager) Search(opts SearchOptions) ([]entity.Bookmark, error) 
 	// first get a list of all the ids that match our query
 	idsMatchingQuery := make([]uint64, 0, 0)
 	counts := make(map[uint64]uint8)
-	words := content.StringToSearchWords(opts.Query)
+	words := content.StringToStemmedSearchWords(opts.Query)
 
 	for _, word := range words {
 		var wi *entity.WordIndex

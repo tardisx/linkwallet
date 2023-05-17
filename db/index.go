@@ -69,7 +69,6 @@ func (db *DB) UpdateIndexForWordsByID(words []string, id uint64) {
 
 func (db *DB) DumpIndex() {
 
-	// delete this id from all indices
 	err := db.store.ForEach(&bolthold.Query{}, func(wi *entity.WordIndex) error {
 		log.Printf("%10s: %v", wi.Word, wi.Bitmap)
 		return nil

@@ -68,7 +68,24 @@ func TestWords(t *testing.T) {
 			words[6] != "dog" {
 			t.Error("incorrect words returned")
 		}
+	}
+}
 
+func TestStemmer(t *testing.T) {
+	s := `quick quick fox 😂 smile http://google.com`
+	words1 := StringToStemmedSearchWords(s)
+	t.Log(words1)
+	if len(words1) != 7 {
+		t.Error("wrong number of words")
+	}
+	if words1[0] != "quick" ||
+		words1[1] != "quick" ||
+		words1[2] != "fox" ||
+		words1[3] != "smile" ||
+		words1[4] != "http" ||
+		words1[5] != "googl" ||
+		words1[6] != "com" {
+		t.Error("bad words")
 	}
 
 }

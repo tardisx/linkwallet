@@ -53,13 +53,15 @@ func FetchPageInfo(bm entity.Bookmark) entity.PageInfo {
 func Words(bm *entity.Bookmark) []string {
 	words := []string{}
 
-	words = append(words, StringToSearchWords(bm.Info.RawText)...)
-	words = append(words, StringToSearchWords(bm.Info.Title)...)
-	words = append(words, StringToSearchWords(bm.URL)...)
+	words = append(words, StringToStemmedSearchWords(bm.Info.RawText)...)
+	words = append(words, StringToStemmedSearchWords(bm.Info.Title)...)
+	words = append(words, StringToStemmedSearchWords(bm.URL)...)
 	return words
 }
 
-func StringToSearchWords(s string) []string {
+// StringToStemmedSearchWords returns a list of stemmed words with stop words
+// removed.
+func StringToStemmedSearchWords(s string) []string {
 	words := []string{}
 
 	words = append(words, stemmerFilter(stopwordFilter(tokenize(s)))...)

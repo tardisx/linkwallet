@@ -69,7 +69,7 @@ func (m *BookmarkManager) DeleteBookmark(bm *entity.Bookmark) error {
 
 // ListBookmarks returns all bookmarks.
 func (m *BookmarkManager) ListBookmarks() ([]entity.Bookmark, error) {
-	bookmarks := make([]entity.Bookmark, 0, 0)
+	bookmarks := make([]entity.Bookmark, 0)
 	err := m.db.store.Find(&bookmarks, &bolthold.Query{})
 	if err != nil {
 		panic(err)

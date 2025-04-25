@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/blevesearch/bleve/v2"
 	"github.com/tardisx/linkwallet/entity"
 	bolthold "github.com/timshannon/bolthold"
 )
@@ -11,6 +12,7 @@ import (
 type DB struct {
 	store *bolthold.Store
 	file  string
+	bleve bleve.Index
 }
 
 func (db *DB) Open(path string) error {
@@ -21,8 +23,38 @@ func (db *DB) Open(path string) error {
 	if err != nil {
 		return fmt.Errorf("cannot open '%s' - %s", path, err)
 	}
+
+	blevePath := path + ".bleve"
+
+	indexMapping := bleve.NewIndexMapping()
+	pageInfoMapping := bleve.NewDocumentMapping()
+	indexMapping.AddDocumentMapping("pageinfo", pageInfoMapping)
+
+	// entity.PageInfo
+	titleFieldMapping := bleve.NewTextFieldMapping()
+	titleFieldMapping.Analyzer = "en"
+	pageInfoMapping.AddFieldMappingsAt("Title", titleFieldMapping)
+
+	rawTextFieldMapping := bleve.NewTextFieldMapping()
+	rawTextFieldMapping.Analyzer = "en"
+	pageInfoMapping.AddFieldMappingsAt("RawText", rawTextFieldMapping)
+
+	index, err := bleve.New(blevePath, indexMapping)
+
+	if err != nil {
+		if err == bleve.ErrorIndexPathExists {
+			index, err = bleve.Open(blevePath)
+			if err != nil {
+				return fmt.Errorf("cannot open bleve '%s' - %s", path, err)
+			}
+		} else {
+			return fmt.Errorf("cannot open bleve '%s' - %s", path, err)
+		}
+	}
+
 	db.store = store
 	db.file = path
+	db.bleve = index
 	return nil
 }
 

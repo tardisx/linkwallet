@@ -2,14 +2,11 @@ package content
 
 import (
 	"log"
-	"strings"
 	"time"
-	"unicode"
 
 	"github.com/tardisx/linkwallet/entity"
 
 	"github.com/gocolly/colly"
-	snowballeng "github.com/kljensen/snowball/english"
 )
 
 func FetchPageInfo(bm entity.Bookmark) entity.PageInfo {
@@ -50,50 +47,50 @@ func FetchPageInfo(bm entity.Bookmark) entity.PageInfo {
 	return info
 }
 
-func Words(bm *entity.Bookmark) []string {
-	words := []string{}
+// func Words(bm *entity.Bookmark) []string {
+// 	words := []string{}
 
-	words = append(words, StringToStemmedSearchWords(bm.Info.RawText)...)
-	words = append(words, StringToStemmedSearchWords(bm.Info.Title)...)
-	words = append(words, StringToStemmedSearchWords(bm.URL)...)
-	return words
-}
+// 	words = append(words, StringToStemmedSearchWords(bm.Info.RawText)...)
+// 	words = append(words, StringToStemmedSearchWords(bm.Info.Title)...)
+// 	words = append(words, StringToStemmedSearchWords(bm.URL)...)
+// 	return words
+// }
 
-// StringToStemmedSearchWords returns a list of stemmed words with stop words
-// removed.
-func StringToStemmedSearchWords(s string) []string {
-	words := []string{}
+// // StringToStemmedSearchWords returns a list of stemmed words with stop words
+// // removed.
+// func StringToStemmedSearchWords(s string) []string {
+// 	words := []string{}
 
-	words = append(words, stemmerFilter(stopwordFilter(tokenize(s)))...)
-	return words
-}
+// 	words = append(words, stemmerFilter(stopwordFilter(tokenize(s)))...)
+// 	return words
+// }
 
-func tokenize(text string) []string {
-	return strings.FieldsFunc(text, func(r rune) bool {
-		// Split on any character that is not a letter or a number.
-		return !unicode.IsLetter(r) && !unicode.IsNumber(r)
-	})
-}
+// func tokenize(text string) []string {
+// 	return strings.FieldsFunc(text, func(r rune) bool {
+// 		// Split on any character that is not a letter or a number.
+// 		return !unicode.IsLetter(r) && !unicode.IsNumber(r)
+// 	})
+// }
 
-func stemmerFilter(tokens []string) []string {
-	r := make([]string, len(tokens))
-	for i, token := range tokens {
-		r[i] = snowballeng.Stem(token, false)
-	}
-	return r
-}
+// func stemmerFilter(tokens []string) []string {
+// 	r := make([]string, len(tokens))
+// 	for i, token := range tokens {
+// 		r[i] = snowballeng.Stem(token, false)
+// 	}
+// 	return r
+// }
 
-var stopwords = map[string]struct{}{ // I wish Go had built-in sets.
-	"a": {}, "and": {}, "be": {}, "have": {}, "i": {},
-	"in": {}, "of": {}, "that": {}, "the": {}, "to": {},
-}
+// var stopwords = map[string]struct{}{ // I wish Go had built-in sets.
+// 	"a": {}, "and": {}, "be": {}, "have": {}, "i": {},
+// 	"in": {}, "of": {}, "that": {}, "the": {}, "to": {},
+// }
 
-func stopwordFilter(tokens []string) []string {
-	r := make([]string, 0, len(tokens))
-	for _, token := range tokens {
-		if _, ok := stopwords[token]; !ok {
-			r = append(r, token)
-		}
-	}
-	return r
-}
+// func stopwordFilter(tokens []string) []string {
+// 	r := make([]string, 0, len(tokens))
+// 	for _, token := range tokens {
+// 		if _, ok := stopwords[token]; !ok {
+// 			r = append(r, token)
+// 		}
+// 	}
+// 	return r
+// }

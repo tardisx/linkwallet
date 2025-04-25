@@ -6,10 +6,13 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/blevesearch/bleve/v2"
+	"github.com/blevesearch/bleve/v2/search/query"
 	"github.com/tardisx/linkwallet/content"
 	"github.com/tardisx/linkwallet/entity"
 
@@ -63,8 +66,7 @@ func (m *BookmarkManager) DeleteBookmark(bm *entity.Bookmark) error {
 	// delete it
 	m.db.store.DeleteMatching(bm, bolthold.Where("ID").Eq(bm.ID))
 	// delete all the index entries
-	m.db.UpdateIndexForWordsByID([]string{}, bm.ID)
-	return nil
+	return m.db.bleve.Delete(fmt.Sprint(bm.ID))
 }
 
 // ListBookmarks returns all bookmarks.
@@ -109,79 +111,28 @@ func (m *BookmarkManager) LoadBookmarkByID(id uint64) entity.Bookmark {
 }
 
 func (m *BookmarkManager) Search(opts SearchOptions) ([]entity.Bookmark, error) {
+	found := []entity.Bookmark{}
 
-	// first get a list of all the ids that match our query
-	idsMatchingQuery := make([]uint64, 0, 0)
-	counts := make(map[uint64]uint8)
-	words := content.StringToStemmedSearchWords(opts.Query)
-
-	for _, word := range words {
-		var wi *entity.WordIndex
-		err := m.db.store.Get("word_index_"+word, &wi)
-		if err == bolthold.ErrNotFound {
-			continue
-		}
-		if err != nil {
-			return nil, fmt.Errorf("error retrieving index: %w", err)
-		}
-		for k := range wi.Bitmap {
-			counts[k]++
-		}
-	}
-
-	for k, v := range counts {
-		if v == uint8(len(words)) {
-			idsMatchingQuery = append(idsMatchingQuery, k)
-			if len(idsMatchingQuery) > 10 {
-				break
-			}
-		}
-	}
-
-	// now we can do our search
-	bhQuery := bolthold.Query{}
-	if opts.Query != "" {
-		bhQuery = bolthold.Query(*bhQuery.And("ID").In(bolthold.Slice(idsMatchingQuery)...))
-	}
-	if opts.Tags != nil && len(opts.Tags) > 0 {
-		bhQuery = bolthold.Query(*bhQuery.And("Tags").ContainsAll(bolthold.Slice(opts.Tags)...))
-	}
-
-	reverse := false
-	sortOrder := opts.Sort
-	if sortOrder != "" && sortOrder[0] == '-' {
-		reverse = true
-		sortOrder = sortOrder[1:]
-	}
-
-	if sortOrder == "title" {
-		bhQuery.SortBy("Info.Title")
-	} else if sortOrder == "created" {
-		bhQuery.SortBy("TimestampCreated")
-	} else if sortOrder == "scraped" {
-		bhQuery.SortBy("TimestampLastScraped")
-	} else {
-		bhQuery.SortBy("ID")
-	}
-
-	if reverse {
-		bhQuery = *bhQuery.Reverse()
-	}
-
-	out := []entity.Bookmark{}
-	err := m.db.store.ForEach(&bhQuery,
-		func(bm *entity.Bookmark) error {
-			out = append(out, *bm)
-
-			return nil
-		})
+	sr, err := m.db.bleve.Search(bleve.NewSearchRequest(
+		query.NewQueryStringQuery(opts.Query)))
 	if err != nil {
 		panic(err)
+	}
+	log.Printf("total: %d", sr.Total)
+	log.Printf("string: %s", sr.String())
+	// log.Printf("%#v", m.db.bleve.StatsMap())
+
+	if sr.Total > 0 {
+		for _, dm := range sr.Hits {
+			log.Printf("hit: %s => %s", dm.ID, dm.String())
+			id, _ := strconv.ParseUint(dm.ID, 10, 64)
+			found = append(found, m.LoadBookmarkByID(id))
+		}
 	}
 
 	m.db.IncrementSearches()
 
-	return out, nil
+	return found, nil
 }
 
 func (m *BookmarkManager) ScrapeAndIndex(bm *entity.Bookmark) error {
@@ -205,9 +156,12 @@ func (m *BookmarkManager) ScrapeAndIndex(bm *entity.Bookmark) error {
 }
 
 func (m *BookmarkManager) UpdateIndexForBookmark(bm *entity.Bookmark) {
-	words := content.Words(bm)
-	words = append(words, bm.Tags...)
-	m.db.UpdateIndexForWordsByID(words, bm.ID)
+	log.Printf("inserting into bleve data for %s", bm.URL)
+	err := m.db.bleve.Index(fmt.Sprint(bm.ID), bm.Info)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("done bleving")
 }
 
 func (m *BookmarkManager) QueueScrape(bm *entity.Bookmark) {

@@ -136,14 +136,15 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 
 	r.POST("/manage/results", func(c *gin.Context) {
 		query := c.PostForm("query")
-		tags := []string{}
 		sort := c.Query("sort")
 
-		if c.PostForm("tags_hidden") != "" {
-			tags = strings.Split(c.PostForm("tags_hidden"), "|")
+		bookmarks := []entity.Bookmark{}
+		if query == "" {
+			bookmarks, _ = bmm.ListBookmarks()
+		} else {
+			bookmarks, _ = bmm.Search(db.SearchOptions{Query: query, Sort: sort})
 		}
-		allBookmarks, _ := bmm.Search(db.SearchOptions{Query: query, Tags: tags, Sort: sort})
-		meta := gin.H{"config": config, "bookmarks": allBookmarks}
+		meta := gin.H{"config": config, "bookmarks": bookmarks}
 
 		colTitle := &ColumnInfo{Name: "Title/URL", Param: "title"}
 		colCreated := &ColumnInfo{Name: "Created", Param: "created", Class: "show-for-large"}

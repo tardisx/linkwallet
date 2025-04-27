@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/blevesearch/bleve/v2"
+	"github.com/blevesearch/bleve/v2/mapping"
 	"github.com/tardisx/linkwallet/entity"
 	bolthold "github.com/timshannon/bolthold"
 )
@@ -26,20 +27,7 @@ func (db *DB) Open(path string) error {
 
 	blevePath := path + ".bleve"
 
-	indexMapping := bleve.NewIndexMapping()
-	pageInfoMapping := bleve.NewDocumentMapping()
-	indexMapping.AddDocumentMapping("pageinfo", pageInfoMapping)
-
-	// entity.PageInfo
-	titleFieldMapping := bleve.NewTextFieldMapping()
-	titleFieldMapping.Analyzer = "en"
-	pageInfoMapping.AddFieldMappingsAt("Title", titleFieldMapping)
-
-	rawTextFieldMapping := bleve.NewTextFieldMapping()
-	rawTextFieldMapping.Analyzer = "en"
-	pageInfoMapping.AddFieldMappingsAt("RawText", rawTextFieldMapping)
-
-	index, err := bleve.New(blevePath, indexMapping)
+	index, err := bleve.New(blevePath, createIndexMapping())
 
 	if err != nil {
 		if err == bleve.ErrorIndexPathExists {
@@ -56,6 +44,24 @@ func (db *DB) Open(path string) error {
 	db.file = path
 	db.bleve = index
 	return nil
+}
+
+func createIndexMapping() mapping.IndexMapping {
+
+	indexMapping := bleve.NewIndexMapping()
+
+	pageInfoMapping := bleve.NewDocumentMapping()
+	pageInfoMapping.AddFieldMappingsAt("Title", bleve.NewTextFieldMapping())
+	pageInfoMapping.AddFieldMappingsAt("Size", bleve.NewNumericFieldMapping())
+	pageInfoMapping.AddFieldMappingsAt("RawText", bleve.NewTextFieldMapping())
+
+	bookmarkMapping := bleve.NewDocumentMapping()
+	bookmarkMapping.AddFieldMappingsAt("URL", bleve.NewTextFieldMapping())
+	bookmarkMapping.AddFieldMappingsAt("Tags", bleve.NewTextFieldMapping())
+	bookmarkMapping.AddSubDocumentMapping("Info", pageInfoMapping)
+
+	indexMapping.AddDocumentMapping("bookmark", bookmarkMapping)
+	return indexMapping
 }
 
 func (db *DB) Close() {

@@ -76,6 +76,7 @@ func (m *BookmarkManager) ListBookmarks() ([]entity.Bookmark, error) {
 	if err != nil {
 		panic(err)
 	}
+	log.Printf("found %d bookmarks", len(bookmarks))
 	return bookmarks, nil
 }
 
@@ -112,6 +113,13 @@ func (m *BookmarkManager) LoadBookmarkByID(id uint64) entity.Bookmark {
 
 func (m *BookmarkManager) Search(opts SearchOptions) ([]entity.Bookmark, error) {
 	found := []entity.Bookmark{}
+	log.Printf("search with query: %s", opts.Query)
+	if opts.Sort != "" {
+		panic("unimplemented sort")
+	}
+	if len(opts.Tags) > 0 {
+		panic("unimplemented tags")
+	}
 
 	sr, err := m.db.bleve.Search(bleve.NewSearchRequest(
 		query.NewQueryStringQuery(opts.Query)))
@@ -157,7 +165,7 @@ func (m *BookmarkManager) ScrapeAndIndex(bm *entity.Bookmark) error {
 
 func (m *BookmarkManager) UpdateIndexForBookmark(bm *entity.Bookmark) {
 	log.Printf("inserting into bleve data for %s", bm.URL)
-	err := m.db.bleve.Index(fmt.Sprint(bm.ID), bm.Info)
+	err := m.db.bleve.Index(fmt.Sprint(bm.ID), bm)
 	if err != nil {
 		panic(err)
 	}

@@ -4,15 +4,14 @@
         <h5>System information</h5>
         <table>
             <tr><th>Memory in use</th><td>{{ meminfo }}</td></tr>
-            <tr><th>Database disk size</th><td>{{ niceSizeMB .stats.FileSize }}Mb</td></tr>
+            <tr><th>Bookmarks DB  size</th><td>{{ niceSizeMB .stats.FileSize }}Mb</td></tr>
+            <tr><th>Bookmarks index size</th><td>{{ niceSizeMB .stats.IndexSize }}Mb</td></tr>
             <tr><th>Bookmarks</th><td>{{ .stats.MostRecentBookmarkInfo.Bookmarks }}</td></tr>
-            <tr><th>Words in index</th><td>{{ .stats.MostRecentBookmarkInfo.IndexedWords }}</td></tr>
             <tr><th>Total searches</th><td>{{ .stats.Searches }}</td></tr>
         </table>
 
         <h5>Database information</h5>
         <img src="/graph/bookmarks">
-        <img src="/graph/indexed_words">
 
     </div>
     <div class="large-6 medium-12 cell">

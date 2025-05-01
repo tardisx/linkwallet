@@ -7,14 +7,14 @@ import (
 )
 
 type DBStats struct {
-	History  map[time.Time]BookmarkInfo
-	FileSize int
-	Searches int
+	History   map[time.Time]BookmarkInfo
+	FileSize  int
+	IndexSize int
+	Searches  int
 }
 
 type BookmarkInfo struct {
-	Bookmarks    int
-	IndexedWords int
+	Bookmarks int
 }
 
 func (stats DBStats) String() string {
@@ -29,7 +29,7 @@ func (stats DBStats) String() string {
 	sort.Slice(dates, func(i, j int) bool { return dates[i].Before(dates[j]) })
 
 	for _, k := range dates {
-		out += fmt.Sprintf("%s - %d bookmarks, %d words indexed\n", k, stats.History[k].Bookmarks, stats.History[k].IndexedWords)
+		out += fmt.Sprintf("%s - %d bookmarks\n", k, stats.History[k].Bookmarks)
 	}
 	return out
 }

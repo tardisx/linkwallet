@@ -3,9 +3,11 @@ package db
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -25,9 +27,9 @@ type BookmarkManager struct {
 }
 
 type SearchOptions struct {
-	Query string
-	Tags  []string
-	Sort  string
+	All     bool
+	Query   string
+	Results int
 }
 
 func NewBookmarkManager(db *DB) *BookmarkManager {
@@ -70,15 +72,15 @@ func (m *BookmarkManager) DeleteBookmark(bm *entity.Bookmark) error {
 }
 
 // ListBookmarks returns all bookmarks.
-func (m *BookmarkManager) ListBookmarks() ([]entity.Bookmark, error) {
-	bookmarks := make([]entity.Bookmark, 0)
-	err := m.db.store.Find(&bookmarks, &bolthold.Query{})
-	if err != nil {
-		panic(err)
-	}
-	log.Printf("found %d bookmarks", len(bookmarks))
-	return bookmarks, nil
-}
+// func (m *BookmarkManager) ListBookmarks() ([]entity.Bookmark, error) {
+// 	bookmarks := make([]entity.Bookmark, 0)
+// 	err := m.db.store.Find(&bookmarks, &bolthold.Query{})
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	log.Printf("found %d bookmarks", len(bookmarks))
+// 	return bookmarks, nil
+// }
 
 // ExportBookmarks exports all bookmarks to an io.Writer
 func (m *BookmarkManager) ExportBookmarks(w io.Writer) error {
@@ -111,30 +113,47 @@ func (m *BookmarkManager) LoadBookmarkByID(id uint64) entity.Bookmark {
 	return ret
 }
 
-func (m *BookmarkManager) Search(opts SearchOptions) ([]entity.Bookmark, error) {
-	found := []entity.Bookmark{}
-	log.Printf("search with query: %s", opts.Query)
-	if opts.Sort != "" {
-		panic("unimplemented sort")
-	}
-	if len(opts.Tags) > 0 {
-		panic("unimplemented tags")
+func (m *BookmarkManager) Search(opts SearchOptions) ([]entity.BookmarkSearchResult, error) {
+	found := []entity.BookmarkSearchResult{}
+	if opts.All && opts.Query != "" {
+		panic("can't fetch all with query")
 	}
 
-	sr, err := m.db.bleve.Search(bleve.NewSearchRequest(
-		query.NewQueryStringQuery(opts.Query)))
+	var q query.Query
+
+	if opts.All {
+		q = bleve.NewMatchAllQuery()
+	} else {
+
+		q = bleve.NewDisjunctionQuery(
+			bleve.NewMatchQuery(opts.Query),
+			bleve.NewTermQuery(opts.Query),
+		)
+	}
+
+	req := bleve.NewSearchRequest(q)
+	if opts.Results > 0 {
+		req.Size = opts.Results
+	}
+	req.Highlight = bleve.NewHighlightWithStyle("html")
+
+	sr, err := m.db.bleve.Search(req)
 	if err != nil {
 		panic(err)
 	}
-	log.Printf("total: %d", sr.Total)
-	log.Printf("string: %s", sr.String())
 	// log.Printf("%#v", m.db.bleve.StatsMap())
 
 	if sr.Total > 0 {
 		for _, dm := range sr.Hits {
-			log.Printf("hit: %s => %s", dm.ID, dm.String())
+
 			id, _ := strconv.ParseUint(dm.ID, 10, 64)
-			found = append(found, m.LoadBookmarkByID(id))
+			bm := m.LoadBookmarkByID(id)
+			bsr := entity.BookmarkSearchResult{
+				Bookmark:  bm,
+				Score:     dm.Score,
+				Highlight: template.HTML(strings.Join(dm.Fragments["Info.RawText"], "\n")),
+			}
+			found = append(found, bsr)
 		}
 	}
 
@@ -255,5 +274,25 @@ func (m *BookmarkManager) Stats() (entity.DBStats, error) {
 		return stats, fmt.Errorf("could not load db file size: %s", err)
 	}
 	stats.FileSize = int(fi.Size())
+	indexSize, err := getBleveIndexSize(m.db.file + ".bleve")
+	if err != nil {
+		return entity.DBStats{}, err
+	}
+	stats.IndexSize = int(indexSize)
+
 	return stats, nil
+}
+
+func getBleveIndexSize(path string) (int64, error) {
+	var size int64
+	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			size += info.Size()
+		}
+		return nil
+	})
+	return size, err
 }

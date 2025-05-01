@@ -5,6 +5,10 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
+
+	"github.com/blevesearch/bleve/v2"
+	"github.com/blevesearch/bleve/v2/search/query"
 
 	"github.com/tardisx/linkwallet/entity"
 )
@@ -140,4 +144,114 @@ func TestTagIndexing(t *testing.T) {
 	if len(searchRes) != 1 {
 		t.Error("did not get one id for sloth")
 	}
+}
+
+func testBM() entity.Bookmark {
+	return entity.Bookmark{
+		ID:  1,
+		URL: "https://one.com",
+		Info: entity.PageInfo{
+			Fetched:    time.Time{},
+			Title:      "one web",
+			Size:       200,
+			StatusCode: 200,
+			RawText:    "one web site is great for all humans",
+		},
+		Tags:                 []string{"hello", "big friends"},
+		PreserveTitle:        false,
+		TimestampCreated:     time.Time{},
+		TimestampLastScraped: time.Time{},
+	}
+}
+
+func TestMappings(t *testing.T) {
+	mapping := createIndexMapping()
+	idx, err := bleve.NewMemOnly(mapping)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+
+	bm := testBM()
+	err = idx.Index("1", bm)
+	if err != nil {
+		panic(err)
+	}
+
+	type tc struct {
+		query   query.Query
+		expHits int
+	}
+	tcs := []tc{
+		{query: bleve.NewMatchQuery("human"), expHits: 1},
+		{query: bleve.NewMatchQuery("humanoid"), expHits: 0},
+		{query: bleve.NewMatchQuery("hello"), expHits: 1},
+		{query: bleve.NewMatchQuery("big"), expHits: 0},
+		{query: bleve.NewMatchQuery("friends"), expHits: 0},
+		{query: bleve.NewMatchQuery("big friend"), expHits: 0},
+		{query: bleve.NewTermQuery("big friends"), expHits: 1},
+		{query: bleve.NewMatchQuery("web great"), expHits: 1},
+	}
+
+	for i := range tcs {
+		q := tcs[i].query
+
+		sr, err := idx.Search(bleve.NewSearchRequest(q))
+		if err != nil {
+			t.Error(err)
+		} else {
+			if len(sr.Hits) != tcs[i].expHits {
+				t.Errorf("wrong hits - expected %d got %d for %s", tcs[i].expHits, len(sr.Hits), tcs[i].query)
+			}
+		}
+	}
+
+}
+
+func TestMappingsDisjunctionQuery(t *testing.T) {
+	mapping := createIndexMapping()
+	idx, err := bleve.NewMemOnly(mapping)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+
+	bm := testBM()
+	err = idx.Index("1", bm)
+	if err != nil {
+		panic(err)
+	}
+
+	type tc struct {
+		query   string
+		expHits int
+	}
+	tcs := []tc{
+		{query: "human", expHits: 1},
+		{query: "humanoid", expHits: 0},
+		{query: "hello", expHits: 1},
+		{query: "big", expHits: 0},
+		{query: "friends", expHits: 0},
+		{query: "big friend", expHits: 0},
+		{query: "big friends", expHits: 1},
+		{query: "web great", expHits: 1},
+	}
+
+	for i := range tcs {
+		q := tcs[i].query
+		req := bleve.NewDisjunctionQuery(
+			bleve.NewMatchQuery(q),
+			bleve.NewTermQuery(q),
+		)
+
+		sr, err := idx.Search(bleve.NewSearchRequest(req))
+		if err != nil {
+			t.Error(err)
+		} else {
+			if len(sr.Hits) != tcs[i].expHits {
+				t.Errorf("wrong hits - expected %d got %d for %s", tcs[i].expHits, len(sr.Hits), tcs[i].query)
+			}
+		}
+	}
+
 }

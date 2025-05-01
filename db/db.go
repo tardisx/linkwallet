@@ -5,6 +5,9 @@ import (
 	"time"
 
 	"github.com/blevesearch/bleve/v2"
+
+	"github.com/blevesearch/bleve/v2/analysis/analyzer/keyword"
+	"github.com/blevesearch/bleve/v2/analysis/lang/en"
 	"github.com/blevesearch/bleve/v2/mapping"
 	"github.com/tardisx/linkwallet/entity"
 	bolthold "github.com/timshannon/bolthold"
@@ -16,6 +19,7 @@ type DB struct {
 	bleve bleve.Index
 }
 
+// Open opens the bookmark boltdb, and the bleve index.
 func (db *DB) Open(path string) error {
 	// options := bolthold.DefaultOptions
 	// options.Dir = dir
@@ -47,20 +51,27 @@ func (db *DB) Open(path string) error {
 }
 
 func createIndexMapping() mapping.IndexMapping {
-
 	indexMapping := bleve.NewIndexMapping()
 
+	englishTextFieldMapping := bleve.NewTextFieldMapping()
+	englishTextFieldMapping.Analyzer = en.AnalyzerName
+
+	// a generic reusable mapping for keyword text
+	keywordFieldMapping := bleve.NewTextFieldMapping()
+	keywordFieldMapping.Analyzer = keyword.Name
+
 	pageInfoMapping := bleve.NewDocumentMapping()
-	pageInfoMapping.AddFieldMappingsAt("Title", bleve.NewTextFieldMapping())
+	pageInfoMapping.AddFieldMappingsAt("Title", englishTextFieldMapping)
 	pageInfoMapping.AddFieldMappingsAt("Size", bleve.NewNumericFieldMapping())
-	pageInfoMapping.AddFieldMappingsAt("RawText", bleve.NewTextFieldMapping())
+	pageInfoMapping.AddFieldMappingsAt("RawText", englishTextFieldMapping)
 
 	bookmarkMapping := bleve.NewDocumentMapping()
 	bookmarkMapping.AddFieldMappingsAt("URL", bleve.NewTextFieldMapping())
-	bookmarkMapping.AddFieldMappingsAt("Tags", bleve.NewTextFieldMapping())
+	bookmarkMapping.AddFieldMappingsAt("Tags", keywordFieldMapping)
 	bookmarkMapping.AddSubDocumentMapping("Info", pageInfoMapping)
 
 	indexMapping.AddDocumentMapping("bookmark", bookmarkMapping)
+
 	return indexMapping
 }
 
@@ -111,16 +122,10 @@ func (db *DB) UpdateBookmarkStats() error {
 	}
 	// count bookmarks and words indexed
 	bmI := entity.Bookmark{}
-	wiI := entity.WordIndex{}
 	bookmarkCount, err := db.store.TxCount(txn, &bmI, &bolthold.Query{})
 	if err != nil {
 		txn.Rollback()
 		return fmt.Errorf("could not get bookmark count: %s", err)
-	}
-	indexWordCount, err := db.store.TxCount(txn, &wiI, &bolthold.Query{})
-	if err != nil {
-		txn.Rollback()
-		return fmt.Errorf("could not get index word count: %s", err)
 	}
 
 	// bucket these stats by day
@@ -135,7 +140,7 @@ func (db *DB) UpdateBookmarkStats() error {
 	if stats.History == nil {
 		stats.History = make(map[time.Time]entity.BookmarkInfo)
 	}
-	stats.History[now] = entity.BookmarkInfo{Bookmarks: bookmarkCount, IndexedWords: indexWordCount}
+	stats.History[now] = entity.BookmarkInfo{Bookmarks: bookmarkCount}
 	err = db.store.TxUpsert(txn, "stats", &stats)
 	if err != nil {
 		txn.Rollback()

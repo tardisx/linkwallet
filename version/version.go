@@ -10,7 +10,7 @@ import (
 	"golang.org/x/mod/semver"
 )
 
-const Tag = "v0.0.36"
+const Tag = "v0.1.0-alpha.0"
 
 type Info struct {
 	Local struct {

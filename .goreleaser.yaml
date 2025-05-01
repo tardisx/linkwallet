@@ -6,6 +6,8 @@ before:
     - go test ./...
 
 builds:
+  - main: ./cmd/linkwallet/
+
   - env:
       - CGO_ENABLED=0
     goos:

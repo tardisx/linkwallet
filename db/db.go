@@ -19,14 +19,17 @@ type DB struct {
 	bleve bleve.Index
 }
 
-// Open opens the bookmark boltdb, and the bleve index.
-func (db *DB) Open(path string) error {
+// Open opens the bookmark boltdb, and the bleve index. It returns
+// true if the index was newly created, so the caller knows all bookmarks
+// need to be re-scraped
+func (db *DB) Open(path string) (bool, error) {
 	// options := bolthold.DefaultOptions
 	// options.Dir = dir
 	// options.ValueDir = dir
+	rescrapeNeeded := false
 	store, err := bolthold.Open(path, 0666, nil)
 	if err != nil {
-		return fmt.Errorf("cannot open '%s' - %s", path, err)
+		return false, fmt.Errorf("cannot open '%s' - %s", path, err)
 	}
 
 	blevePath := path + ".bleve"
@@ -37,17 +40,21 @@ func (db *DB) Open(path string) error {
 		if err == bleve.ErrorIndexPathExists {
 			index, err = bleve.Open(blevePath)
 			if err != nil {
-				return fmt.Errorf("cannot open bleve '%s' - %s", path, err)
+				return false, fmt.Errorf("cannot open bleve '%s' - %s", path, err)
 			}
 		} else {
-			return fmt.Errorf("cannot open bleve '%s' - %s", path, err)
+			return false, fmt.Errorf("cannot open bleve '%s' - %s", path, err)
 		}
+	} else {
+		// we just created an index, one didn't exist, so we need to queue
+		// all bookmarks to be scraped
+		rescrapeNeeded = true
 	}
 
 	db.store = store
 	db.file = path
 	db.bleve = index
-	return nil
+	return rescrapeNeeded, nil
 }
 
 func createIndexMapping() mapping.IndexMapping {

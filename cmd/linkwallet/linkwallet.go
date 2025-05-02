@@ -21,7 +21,7 @@ func main() {
 	}
 
 	dbh := db.DB{}
-	err := dbh.Open(dbPath)
+	rescrape, err := dbh.Open(dbPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,5 +52,19 @@ func main() {
 	server := web.Create(bmm, cmm)
 	go bmm.RunQueue()
 	go bmm.UpdateContent()
+
+	if rescrape {
+		log.Printf("queueing all bookmarks for rescraping, as index was just created")
+		bookmarks, err := bmm.AllBookmarks()
+		if err != nil {
+			log.Printf("could not load all bookmarks: %s", err.Error())
+		} else {
+			for _, bm := range bookmarks {
+				bmm.QueueScrape(&bm)
+			}
+		}
+		log.Printf("queued %d bookmarks for scraping", len(bookmarks))
+	}
+
 	server.Start()
 }

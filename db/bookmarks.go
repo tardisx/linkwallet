@@ -262,6 +262,17 @@ func (m *BookmarkManager) UpdateContent() {
 	}
 }
 
+// AllBookmarks returns all bookmarks. It does not use the index for this
+// operation.
+func (m *BookmarkManager) AllBookmarks() ([]entity.Bookmark, error) {
+	bookmarks := make([]entity.Bookmark, 0)
+	err := m.db.store.Find(&bookmarks, &bolthold.Query{})
+	if err != nil {
+		panic(err)
+	}
+	return bookmarks, nil
+}
+
 func (m *BookmarkManager) Stats() (entity.DBStats, error) {
 	stats := entity.DBStats{}
 	err := m.db.store.Get("stats", &stats)

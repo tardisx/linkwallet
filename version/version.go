@@ -10,11 +10,20 @@ import (
 	"golang.org/x/mod/semver"
 )
 
-const Tag = "v0.1.0-alpha.0"
+var version string
+var commit string
+var date string
+
+var VersionInfo Info
+
+func init() {
+	VersionInfo.Remote.Valid = false
+	VersionInfo.Local.Version = version
+}
 
 type Info struct {
 	Local struct {
-		Tag string
+		Version string
 	}
 	Remote struct {
 		Valid bool
@@ -24,20 +33,13 @@ type Info struct {
 	m                   sync.Mutex
 }
 
-var VersionInfo Info
-
-func init() {
-	VersionInfo.Remote.Valid = false
-	VersionInfo.Local.Tag = Tag
-}
-
 func (vi *Info) UpgradeAvailable() bool {
 	vi.m.Lock()
 	defer vi.m.Unlock()
 	if !vi.Remote.Valid {
 		return false
 	}
-	if semver.Compare(vi.Local.Tag, vi.Remote.Tag) < 0 {
+	if semver.Compare(vi.Local.Version, vi.Remote.Tag) < 0 {
 		return true
 	}
 	return false
@@ -59,7 +61,7 @@ func (vi *Info) UpdateVersionInfo() {
 	vi.Remote.Valid = true
 	vi.UpgradeReleaseNotes = ""
 	for _, r := range rels {
-		if semver.Compare(VersionInfo.Local.Tag, *r.TagName) < 0 {
+		if semver.Compare(VersionInfo.Local.Version, *r.TagName) < 0 {
 			vi.UpgradeReleaseNotes += fmt.Sprintf("*Version %s*\n\n", *r.TagName)
 			bodyLines := strings.Split(*r.Body, "\n")
 			for _, l := range bodyLines {

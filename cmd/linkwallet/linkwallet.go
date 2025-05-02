@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/tardisx/linkwallet/db"
-	"github.com/tardisx/linkwallet/version"
+	v "github.com/tardisx/linkwallet/version"
 	"github.com/tardisx/linkwallet/web"
 )
 
@@ -31,7 +31,7 @@ func main() {
 
 	go func() {
 		for {
-			version.VersionInfo.UpdateVersionInfo()
+			v.VersionInfo.UpdateVersionInfo()
 			time.Sleep(time.Hour * 6)
 		}
 	}()
@@ -47,7 +47,7 @@ func main() {
 		}
 	}()
 
-	log.Printf("linkwallet version %s starting", version.VersionInfo.Local.Tag)
+	log.Printf("linkwallet version %s starting", v.VersionInfo.Local.Version)
 
 	server := web.Create(bmm, cmm)
 	go bmm.RunQueue()

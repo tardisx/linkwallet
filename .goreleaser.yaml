@@ -7,6 +7,8 @@ before:
 
 builds:
   - main: ./cmd/linkwallet/
+    ldflags:
+      - -s -w -X github.com/tardisx/linkwallet/version.version={{.Version}} -X github.com/tardisx/linkwallet/version.commit={{.Commit}} -X github.com/tardisx/linkwallet/version.date={{.Date}}
     env:
       - CGO_ENABLED=0
     goos:

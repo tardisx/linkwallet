@@ -23,6 +23,7 @@
         <li>
           <a href="#">Admin</a>
           <ul class="menu vertical">
+            <li><a href="/info">System Info</a></li>
             <li><a href="/config">Configuration</a></li>
             <li><a href="/manage">Manage links</a></li>
             <li><a href="/export">Export all URLs</a></li>
@@ -34,12 +35,11 @@
     </div>
     <div class="top-bar-right">
       <ul class="menu">
-        <li>
-          <a href="/info">{{ version.Local.Version }}
+        <li class="menu-text">
+          {{ version.Local.Version }}
             {{ if version.UpgradeAvailable }}
-            ❗
+            <a href="/info">❗</a>
             {{ end }}
-          </a>
         </li>
         <li>
           <a href="https://github.com/tardisx/linkwallet">

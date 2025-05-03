@@ -4,6 +4,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/blevesearch/bleve/v2"
+
+	"github.com/blevesearch/bleve/v2/analysis/analyzer/keyword"
+	"github.com/blevesearch/bleve/v2/analysis/lang/en"
+	"github.com/blevesearch/bleve/v2/mapping"
 	"github.com/tardisx/linkwallet/entity"
 	bolthold "github.com/timshannon/bolthold"
 )
@@ -11,19 +16,70 @@ import (
 type DB struct {
 	store *bolthold.Store
 	file  string
+	bleve bleve.Index
 }
 
-func (db *DB) Open(path string) error {
+// Open opens the bookmark boltdb, and the bleve index. It returns
+// true if the index was newly created, so the caller knows all bookmarks
+// need to be re-scraped
+func (db *DB) Open(path string) (bool, error) {
 	// options := bolthold.DefaultOptions
 	// options.Dir = dir
 	// options.ValueDir = dir
+	rescrapeNeeded := false
 	store, err := bolthold.Open(path, 0666, nil)
 	if err != nil {
-		return fmt.Errorf("cannot open '%s' - %s", path, err)
+		return false, fmt.Errorf("cannot open '%s' - %s", path, err)
 	}
+
+	blevePath := path + ".bleve"
+
+	index, err := bleve.New(blevePath, createIndexMapping())
+
+	if err != nil {
+		if err == bleve.ErrorIndexPathExists {
+			index, err = bleve.Open(blevePath)
+			if err != nil {
+				return false, fmt.Errorf("cannot open bleve '%s' - %s", path, err)
+			}
+		} else {
+			return false, fmt.Errorf("cannot open bleve '%s' - %s", path, err)
+		}
+	} else {
+		// we just created an index, one didn't exist, so we need to queue
+		// all bookmarks to be scraped
+		rescrapeNeeded = true
+	}
+
 	db.store = store
 	db.file = path
-	return nil
+	db.bleve = index
+	return rescrapeNeeded, nil
+}
+
+func createIndexMapping() mapping.IndexMapping {
+	indexMapping := bleve.NewIndexMapping()
+
+	englishTextFieldMapping := bleve.NewTextFieldMapping()
+	englishTextFieldMapping.Analyzer = en.AnalyzerName
+
+	// a generic reusable mapping for keyword text
+	keywordFieldMapping := bleve.NewTextFieldMapping()
+	keywordFieldMapping.Analyzer = keyword.Name
+
+	pageInfoMapping := bleve.NewDocumentMapping()
+	pageInfoMapping.AddFieldMappingsAt("Title", englishTextFieldMapping)
+	pageInfoMapping.AddFieldMappingsAt("Size", bleve.NewNumericFieldMapping())
+	pageInfoMapping.AddFieldMappingsAt("RawText", englishTextFieldMapping)
+
+	bookmarkMapping := bleve.NewDocumentMapping()
+	bookmarkMapping.AddFieldMappingsAt("URL", bleve.NewTextFieldMapping())
+	bookmarkMapping.AddFieldMappingsAt("Tags", keywordFieldMapping)
+	bookmarkMapping.AddSubDocumentMapping("Info", pageInfoMapping)
+
+	indexMapping.AddDocumentMapping("bookmark", bookmarkMapping)
+
+	return indexMapping
 }
 
 func (db *DB) Close() {
@@ -73,16 +129,10 @@ func (db *DB) UpdateBookmarkStats() error {
 	}
 	// count bookmarks and words indexed
 	bmI := entity.Bookmark{}
-	wiI := entity.WordIndex{}
 	bookmarkCount, err := db.store.TxCount(txn, &bmI, &bolthold.Query{})
 	if err != nil {
 		txn.Rollback()
 		return fmt.Errorf("could not get bookmark count: %s", err)
-	}
-	indexWordCount, err := db.store.TxCount(txn, &wiI, &bolthold.Query{})
-	if err != nil {
-		txn.Rollback()
-		return fmt.Errorf("could not get index word count: %s", err)
 	}
 
 	// bucket these stats by day
@@ -97,7 +147,7 @@ func (db *DB) UpdateBookmarkStats() error {
 	if stats.History == nil {
 		stats.History = make(map[time.Time]entity.BookmarkInfo)
 	}
-	stats.History[now] = entity.BookmarkInfo{Bookmarks: bookmarkCount, IndexedWords: indexWordCount}
+	stats.History[now] = entity.BookmarkInfo{Bookmarks: bookmarkCount}
 	err = db.store.TxUpsert(txn, "stats", &stats)
 	if err != nil {
 		txn.Rollback()

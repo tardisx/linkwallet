@@ -3,6 +3,7 @@ package version
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 
@@ -10,11 +11,20 @@ import (
 	"golang.org/x/mod/semver"
 )
 
-const Tag = "v0.0.36"
+var version string // populated by goreleaser, without leading 'v'
+var commit string
+var date string
+
+var VersionInfo Info
+
+func init() {
+	VersionInfo.Remote.Valid = false
+	VersionInfo.Local.Version = "v" + version
+}
 
 type Info struct {
 	Local struct {
-		Tag string
+		Version string
 	}
 	Remote struct {
 		Valid bool
@@ -24,23 +34,29 @@ type Info struct {
 	m                   sync.Mutex
 }
 
-var VersionInfo Info
-
-func init() {
-	VersionInfo.Remote.Valid = false
-	VersionInfo.Local.Tag = Tag
-}
-
 func (vi *Info) UpgradeAvailable() bool {
 	vi.m.Lock()
 	defer vi.m.Unlock()
 	if !vi.Remote.Valid {
 		return false
 	}
-	if semver.Compare(vi.Local.Tag, vi.Remote.Tag) < 0 {
-		return true
+
+	log.Printf("checking if upgrade available - local %s remote %s", vi.Local.Version, vi.Remote.Tag)
+	localValid := semver.IsValid(vi.Local.Version)
+	remoteValid := semver.IsValid(vi.Remote.Tag)
+
+	if !localValid {
+		log.Printf("version %s invalid", vi.Local.Version)
 	}
-	return false
+	if !remoteValid {
+		log.Printf("version %s invalid", vi.Remote.Tag)
+	}
+
+	if !localValid || !remoteValid {
+		return false
+	}
+
+	return semver.Compare(vi.Local.Version, vi.Remote.Tag) < 0
 }
 
 func (vi *Info) UpdateVersionInfo() {
@@ -59,7 +75,7 @@ func (vi *Info) UpdateVersionInfo() {
 	vi.Remote.Valid = true
 	vi.UpgradeReleaseNotes = ""
 	for _, r := range rels {
-		if semver.Compare(VersionInfo.Local.Tag, *r.TagName) < 0 {
+		if semver.Compare(VersionInfo.Local.Version, *r.TagName) < 0 {
 			vi.UpgradeReleaseNotes += fmt.Sprintf("*Version %s*\n\n", *r.TagName)
 			bodyLines := strings.Split(*r.Body, "\n")
 			for _, l := range bodyLines {

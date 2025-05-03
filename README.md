@@ -5,14 +5,16 @@
 
 A self-hosted bookmark database with full-text page content search.
 
-Searching uses English stemming, providing matches against similar words, in both page
-titles and page content. Searches are lightning fast.
+linkwallet uses the [Bleve](https://blevesearch.com) indexing library, providing
+excellent support for free-text queries over the content of all your bookmarked
+pages.
 
 ![Search][screenshot_search]
 
-Bookmark content is automatically re-scraped periodically. Tags can be applied (though with 
-the full-text search they are often not needed). Bookmarks can be easily managed, and can be
-imported or exported in bulk.
+linkwallet indexes the page content, and automatically re-scrapes the pages
+periodically. Tags can be applied (though with the full-text search they are
+often not needed). Bookmarks can be easily managed, and can be imported or
+exported in bulk.
 
 ![Admin][screenshot_admin]
 
@@ -30,14 +32,11 @@ Bookmarks can be added with two clicks via the bookmarklet.
   * Page content periodically refreshed automatically
   * Interactively search across titles and content
   * Rippingly fast results, as you type
-    * full text search ~60ms (over full text content of 600 bookmarks)
+    * full text search ~30ms (over full text content of 600 bookmarks)
   * No need to remember how you filed something, you just need a keyword
     or two to discover it again
 * Embedded database, no separate database required
-* Light on resources
-  * ~21Mb binary
-  * ~40Mb memory
-  * ~24Mb database (600 bookmarks, full text content indexed)
+* Extremely light on resources
 * Easily export your bookmarks to a plain text file - your data is yours
 
 # Installation
@@ -57,11 +56,7 @@ To upgrade:
 
 ## Packages (deb/rpm)
 
-* Download the .deb or .rpm from the releases
-* Install using apt/dpkg/rpm
-  * Automatically creates a systemd service, enabled and started
-  * Runs as user `linkwallet`
-  * Database stored in `/var/lib/linkwallet`
+[not yet migrated to new goreleaser - please message me if you need packages]
 
 ## Binary
 

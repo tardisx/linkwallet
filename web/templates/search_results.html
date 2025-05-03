@@ -1,5 +1,8 @@
 <ul>
     {{ range .results }}
-    <li><a href="{{ .URL }}">{{ .Info.Title }}</a> - {{ .URL }}</li>
+    <li>
+         <a href="{{ .Bookmark.URL }}">{{ .Bookmark.Info.Title }}</a><br>
+         {{ .Highlight }}
+        </li>
     {{ end }}
 </ul>

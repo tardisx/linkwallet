@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "bleve",
         "bolthold",
         "colly",
         "htmx",
@@ -9,5 +10,8 @@
         "serialised",
         "stopword",
         "Upsert"
+    ],
+    "cSpell.ignoreWords": [
+        "rescrape"
     ]
 }

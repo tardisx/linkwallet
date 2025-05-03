@@ -50,26 +50,9 @@ type Server struct {
 }
 
 type ColumnInfo struct {
-	Name   string
-	Param  string
-	Sorted string
-	Class  string
-}
-
-func (c ColumnInfo) URLString() string {
-	if c.Sorted == "asc" {
-		return "-" + c.Param
-	}
-	return c.Param
-}
-
-func (c ColumnInfo) TitleArrow() string {
-	if c.Sorted == "asc" {
-		return "↑"
-	} else if c.Sorted == "desc" {
-		return "↓"
-	}
-	return ""
+	Name  string
+	Param string
+	Class string
 }
 
 // Create creates a new web server instance and sets up routing.
@@ -126,9 +109,8 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 	})
 
 	r.GET("/manage", func(c *gin.Context) {
-
-		allBookmarks, _ := bmm.ListBookmarks()
-		meta := gin.H{"page": "manage", "config": config, "bookmarks": allBookmarks}
+		results, _ := bmm.Search(db.SearchOptions{All: true})
+		meta := gin.H{"page": "manage", "config": config, "results": results}
 		c.HTML(http.StatusOK,
 			"_layout.html", meta,
 		)
@@ -136,36 +118,18 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 
 	r.POST("/manage/results", func(c *gin.Context) {
 		query := c.PostForm("query")
-		tags := []string{}
-		sort := c.Query("sort")
 
-		if c.PostForm("tags_hidden") != "" {
-			tags = strings.Split(c.PostForm("tags_hidden"), "|")
+		results := make([]entity.BookmarkSearchResult, 0)
+		if query == "" {
+			results, _ = bmm.Search(db.SearchOptions{All: true, Results: 100})
+		} else {
+			results, _ = bmm.Search(db.SearchOptions{Query: query})
 		}
-		allBookmarks, _ := bmm.Search(db.SearchOptions{Query: query, Tags: tags, Sort: sort})
-		meta := gin.H{"config": config, "bookmarks": allBookmarks}
+		meta := gin.H{"config": config, "results": results}
 
 		colTitle := &ColumnInfo{Name: "Title/URL", Param: "title"}
 		colCreated := &ColumnInfo{Name: "Created", Param: "created", Class: "show-for-large"}
 		colScraped := &ColumnInfo{Name: "Scraped", Param: "scraped", Class: "show-for-large"}
-		if sort == "title" {
-			colTitle.Sorted = "asc"
-		}
-		if sort == "-title" {
-			colTitle.Sorted = "desc"
-		}
-		if sort == "scraped" {
-			colScraped.Sorted = "asc"
-		}
-		if sort == "-scraped" {
-			colScraped.Sorted = "desc"
-		}
-		if sort == "created" {
-			colCreated.Sorted = "asc"
-		}
-		if sort == "-created" {
-			colCreated.Sorted = "desc"
-		}
 
 		cols := gin.H{
 			"title":   colTitle,
@@ -174,9 +138,7 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 		}
 		meta["column"] = cols
 
-		c.HTML(http.StatusOK,
-			"manage_results.html", meta,
-		)
+		c.HTML(http.StatusOK, "manage_results.html", meta)
 
 	})
 
@@ -465,10 +427,7 @@ func Create(bmm *db.BookmarkManager, cmm *db.ConfigManager) *Server {
 
 func plotPoints(sortedKeys []time.Time, dbStats entity.DBStats, p *plot.Plot, k string) {
 
-	if k == "indexed_words" {
-		p.Title.Text = "Indexed words over time"
-		p.Y.Label.Text = "Words indexed"
-	} else if k == "bookmarks" {
+	if k == "bookmarks" {
 		p.Title.Text = "Bookmarks over time"
 		p.Y.Label.Text = "Bookmarks"
 	} else {
@@ -479,9 +438,7 @@ func plotPoints(sortedKeys []time.Time, dbStats entity.DBStats, p *plot.Plot, k 
 	pts := make(plotter.XYs, len(sortedKeys))
 	for i := range sortedKeys {
 		pts[i].X = float64(sortedKeys[i].Unix())
-		if k == "indexed_words" {
-			pts[i].Y = float64(dbStats.History[sortedKeys[i]].IndexedWords)
-		} else if k == "bookmarks" {
+		if k == "bookmarks" {
 			pts[i].Y = float64(dbStats.History[sortedKeys[i]].Bookmarks)
 		} else {
 			panic("bad key")

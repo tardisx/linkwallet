@@ -3,13 +3,19 @@ package db
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/blevesearch/bleve/v2"
+	"github.com/blevesearch/bleve/v2/analysis/lang/en"
+	"github.com/blevesearch/bleve/v2/search/query"
 	"github.com/tardisx/linkwallet/content"
 	"github.com/tardisx/linkwallet/entity"
 
@@ -22,9 +28,9 @@ type BookmarkManager struct {
 }
 
 type SearchOptions struct {
-	Query string
-	Tags  []string
-	Sort  string
+	All     bool
+	Query   string
+	Results int
 }
 
 func NewBookmarkManager(db *DB) *BookmarkManager {
@@ -63,19 +69,19 @@ func (m *BookmarkManager) DeleteBookmark(bm *entity.Bookmark) error {
 	// delete it
 	m.db.store.DeleteMatching(bm, bolthold.Where("ID").Eq(bm.ID))
 	// delete all the index entries
-	m.db.UpdateIndexForWordsByID([]string{}, bm.ID)
-	return nil
+	return m.db.bleve.Delete(fmt.Sprint(bm.ID))
 }
 
 // ListBookmarks returns all bookmarks.
-func (m *BookmarkManager) ListBookmarks() ([]entity.Bookmark, error) {
-	bookmarks := make([]entity.Bookmark, 0)
-	err := m.db.store.Find(&bookmarks, &bolthold.Query{})
-	if err != nil {
-		panic(err)
-	}
-	return bookmarks, nil
-}
+// func (m *BookmarkManager) ListBookmarks() ([]entity.Bookmark, error) {
+// 	bookmarks := make([]entity.Bookmark, 0)
+// 	err := m.db.store.Find(&bookmarks, &bolthold.Query{})
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	log.Printf("found %d bookmarks", len(bookmarks))
+// 	return bookmarks, nil
+// }
 
 // ExportBookmarks exports all bookmarks to an io.Writer
 func (m *BookmarkManager) ExportBookmarks(w io.Writer) error {
@@ -108,80 +114,53 @@ func (m *BookmarkManager) LoadBookmarkByID(id uint64) entity.Bookmark {
 	return ret
 }
 
-func (m *BookmarkManager) Search(opts SearchOptions) ([]entity.Bookmark, error) {
-
-	// first get a list of all the ids that match our query
-	idsMatchingQuery := make([]uint64, 0, 0)
-	counts := make(map[uint64]uint8)
-	words := content.StringToStemmedSearchWords(opts.Query)
-
-	for _, word := range words {
-		var wi *entity.WordIndex
-		err := m.db.store.Get("word_index_"+word, &wi)
-		if err == bolthold.ErrNotFound {
-			continue
-		}
-		if err != nil {
-			return nil, fmt.Errorf("error retrieving index: %w", err)
-		}
-		for k := range wi.Bitmap {
-			counts[k]++
-		}
+func (m *BookmarkManager) Search(opts SearchOptions) ([]entity.BookmarkSearchResult, error) {
+	found := []entity.BookmarkSearchResult{}
+	if opts.All && opts.Query != "" {
+		panic("can't fetch all with query")
 	}
 
-	for k, v := range counts {
-		if v == uint8(len(words)) {
-			idsMatchingQuery = append(idsMatchingQuery, k)
-			if len(idsMatchingQuery) > 10 {
-				break
-			}
-		}
-	}
+	var q query.Query
 
-	// now we can do our search
-	bhQuery := bolthold.Query{}
-	if opts.Query != "" {
-		bhQuery = bolthold.Query(*bhQuery.And("ID").In(bolthold.Slice(idsMatchingQuery)...))
-	}
-	if opts.Tags != nil && len(opts.Tags) > 0 {
-		bhQuery = bolthold.Query(*bhQuery.And("Tags").ContainsAll(bolthold.Slice(opts.Tags)...))
-	}
-
-	reverse := false
-	sortOrder := opts.Sort
-	if sortOrder != "" && sortOrder[0] == '-' {
-		reverse = true
-		sortOrder = sortOrder[1:]
-	}
-
-	if sortOrder == "title" {
-		bhQuery.SortBy("Info.Title")
-	} else if sortOrder == "created" {
-		bhQuery.SortBy("TimestampCreated")
-	} else if sortOrder == "scraped" {
-		bhQuery.SortBy("TimestampLastScraped")
+	if opts.All {
+		q = bleve.NewMatchAllQuery()
 	} else {
-		bhQuery.SortBy("ID")
+		mq := bleve.NewMatchQuery(opts.Query)
+		mq.Analyzer = en.AnalyzerName
+		tq := bleve.NewTermQuery(opts.Query)
+
+		q = bleve.NewDisjunctionQuery(mq, tq)
 	}
 
-	if reverse {
-		bhQuery = *bhQuery.Reverse()
+	req := bleve.NewSearchRequest(q)
+	if opts.Results > 0 {
+		req.Size = opts.Results
 	}
+	req.Highlight = bleve.NewHighlightWithStyle("html")
 
-	out := []entity.Bookmark{}
-	err := m.db.store.ForEach(&bhQuery,
-		func(bm *entity.Bookmark) error {
-			out = append(out, *bm)
-
-			return nil
-		})
+	sr, err := m.db.bleve.Search(req)
 	if err != nil {
 		panic(err)
+	}
+	// log.Printf("%#v", m.db.bleve.StatsMap())
+
+	if sr.Total > 0 {
+		for _, dm := range sr.Hits {
+
+			id, _ := strconv.ParseUint(dm.ID, 10, 64)
+			bm := m.LoadBookmarkByID(id)
+			bsr := entity.BookmarkSearchResult{
+				Bookmark:  bm,
+				Score:     dm.Score,
+				Highlight: template.HTML(strings.Join(dm.Fragments["Info.RawText"], "\n")),
+			}
+			found = append(found, bsr)
+		}
 	}
 
 	m.db.IncrementSearches()
 
-	return out, nil
+	return found, nil
 }
 
 func (m *BookmarkManager) ScrapeAndIndex(bm *entity.Bookmark) error {
@@ -205,9 +184,11 @@ func (m *BookmarkManager) ScrapeAndIndex(bm *entity.Bookmark) error {
 }
 
 func (m *BookmarkManager) UpdateIndexForBookmark(bm *entity.Bookmark) {
-	words := content.Words(bm)
-	words = append(words, bm.Tags...)
-	m.db.UpdateIndexForWordsByID(words, bm.ID)
+	log.Printf("inserting into bleve data for %s", bm.URL)
+	err := m.db.bleve.Index(fmt.Sprint(bm.ID), bm)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (m *BookmarkManager) QueueScrape(bm *entity.Bookmark) {
@@ -281,6 +262,17 @@ func (m *BookmarkManager) UpdateContent() {
 	}
 }
 
+// AllBookmarks returns all bookmarks. It does not use the index for this
+// operation.
+func (m *BookmarkManager) AllBookmarks() ([]entity.Bookmark, error) {
+	bookmarks := make([]entity.Bookmark, 0)
+	err := m.db.store.Find(&bookmarks, &bolthold.Query{})
+	if err != nil {
+		panic(err)
+	}
+	return bookmarks, nil
+}
+
 func (m *BookmarkManager) Stats() (entity.DBStats, error) {
 	stats := entity.DBStats{}
 	err := m.db.store.Get("stats", &stats)
@@ -293,5 +285,25 @@ func (m *BookmarkManager) Stats() (entity.DBStats, error) {
 		return stats, fmt.Errorf("could not load db file size: %s", err)
 	}
 	stats.FileSize = int(fi.Size())
+	indexSize, err := getBleveIndexSize(m.db.file + ".bleve")
+	if err != nil {
+		return entity.DBStats{}, err
+	}
+	stats.IndexSize = int(indexSize)
+
 	return stats, nil
+}
+
+func getBleveIndexSize(path string) (int64, error) {
+	var size int64
+	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			size += info.Size()
+		}
+		return nil
+	})
+	return size, err
 }

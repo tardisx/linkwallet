@@ -47,45 +47,45 @@ func TestSimpleScrape(t *testing.T) {
 	}
 }
 
-func TestWords(t *testing.T) {
+// func TestWords(t *testing.T) {
 
-	bm := entity.Bookmark{
-		//		ID:                   0,
-		//		URL:                  "",
-		Info: entity.PageInfo{RawText: "the quick brown fox jumped over the lazy dog"},
-		//		Tags:                 []string{},
-	}
-	words := Words(&bm)
-	if len(words) != 7 {
-		t.Errorf("got %d words not 7", len(words))
-	} else {
-		if words[0] != "quick" ||
-			words[1] != "brown" ||
-			words[2] != "fox" ||
-			words[3] != "jump" ||
-			words[4] != "over" ||
-			words[5] != "lazi" ||
-			words[6] != "dog" {
-			t.Error("incorrect words returned")
-		}
-	}
-}
+// 	bm := entity.Bookmark{
+// 		//		ID:                   0,
+// 		//		URL:                  "",
+// 		Info: entity.PageInfo{RawText: "the quick brown fox jumped over the lazy dog"},
+// 		//		Tags:                 []string{},
+// 	}
+// 	words := Words(&bm)
+// 	if len(words) != 7 {
+// 		t.Errorf("got %d words not 7", len(words))
+// 	} else {
+// 		if words[0] != "quick" ||
+// 			words[1] != "brown" ||
+// 			words[2] != "fox" ||
+// 			words[3] != "jump" ||
+// 			words[4] != "over" ||
+// 			words[5] != "lazi" ||
+// 			words[6] != "dog" {
+// 			t.Error("incorrect words returned")
+// 		}
+// 	}
+// }
 
-func TestStemmer(t *testing.T) {
-	s := `quick quick fox 😂 smile http://google.com`
-	words1 := StringToStemmedSearchWords(s)
-	t.Log(words1)
-	if len(words1) != 7 {
-		t.Error("wrong number of words")
-	}
-	if words1[0] != "quick" ||
-		words1[1] != "quick" ||
-		words1[2] != "fox" ||
-		words1[3] != "smile" ||
-		words1[4] != "http" ||
-		words1[5] != "googl" ||
-		words1[6] != "com" {
-		t.Error("bad words")
-	}
+// func TestStemmer(t *testing.T) {
+// 	s := `quick quick fox 😂 smile http://google.com`
+// 	words1 := StringToStemmedSearchWords(s)
+// 	t.Log(words1)
+// 	if len(words1) != 7 {
+// 		t.Error("wrong number of words")
+// 	}
+// 	if words1[0] != "quick" ||
+// 		words1[1] != "quick" ||
+// 		words1[2] != "fox" ||
+// 		words1[3] != "smile" ||
+// 		words1[4] != "http" ||
+// 		words1[5] != "googl" ||
+// 		words1[6] != "com" {
+// 		t.Error("bad words")
+// 	}
 
-}
+// }

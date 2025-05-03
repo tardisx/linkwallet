@@ -1,93 +1,77 @@
+version: 2
+
 before:
   hooks:
-    # clean up/install modules
     - go mod tidy
+    - go test ./...
+
 builds:
-  - main: cmd/linkwallet/linkwallet.go
+  - main: ./cmd/linkwallet/
+    ldflags:
+      - -s -w -X github.com/tardisx/linkwallet/version.version={{.Version}} -X github.com/tardisx/linkwallet/version.commit={{.Commit}} -X github.com/tardisx/linkwallet/version.date={{.Date}}
     env:
       - CGO_ENABLED=0
     goos:
       - linux
       - windows
       - darwin
-dockers:
-  - goos: linux
-    goarch: amd64
-    image_templates:
-    - "tardisx/linkwallet:{{ .Tag }}"
-    - "tardisx/linkwallet:v{{ .Major }}"
-    - "tardisx/linkwallet:v{{ .Major }}.{{ .Minor }}"
-    - "tardisx/linkwallet"
-    build_flag_templates:
-    - "--platform=linux/amd64"
-nfpms:
-  -
-    id: default
-    package_name: linkwallet
-    file_name_template: "{{ .ConventionalFileName }}"
-    builds:
-    replacements:
-      darwin: darwin
-      linux: linux
-      windows: windows
-      386: 386
-      amd64: amd64_v1
-    vendor:
-    maintainer: Justin Hawkins <justin@hawkins.id.au>
-    description: |-
-       A self-hosted bookmark database with full-text page content search.
-    formats:
-      # - apk
-      - deb
-      - rpm
-    dependencies:
-    recommends:
-    suggests:
-    conflicts:
-    replaces:
-    epoch:
-    prerelease:
-    version_metadata:
-    release:
-    section: default
-    priority: extra
-    meta: false
-    scripts:
-      preinstall: "etc/preinstall.sh"
-      postinstall: "etc/postinstall.sh"
-      preremove: "etc/preremove.sh"
-      postremove: "etc/postremove.sh"
-    contents:
-      - src: etc/linkwallet.service
-        dst: /lib/systemd/system/linkwallet.service
-        file_info:
-          mode: 0664
-          #mtime: 2008-01-02T15:04:05Z
-          owner: root
-          group: root
-      - dst: /var/lib/linkwallet
-        type: dir
-        file_info:
-          mode: 0700
-          owner: linkwallet
-          group: linkwallet
+      - freebsd
+    goarch:
+      - arm
+      - arm64
+      - amd64
+    goarm:
+      - 6
+      - 7
+    ignore:
+      - goos: darwin
+        goarch: arm
+      - goos: windows
+        goarch: arm
+      - goos: windows
+        goarch: arm64
+      - goos: freebsd
+        goarch: arm
+
 archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
-checksum:
-  name_template: 'checksums.txt'
-snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  - formats: [tar.gz]
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
 changelog:
-  sort: asc
-  filters:
-    exclude:
-      - '^Merge:'
-      - '^docs:'
-      - '^test:'
-      - '^[Bb]ump'
-      - '^[Cc]lean'
+  disable: true
+
+dockers:
+  - image_templates:
+      - "tardisx/linkwallet:{{ .Tag }}-amd64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/amd64"
+  - image_templates:
+      - "tardisx/linkwallet:{{ .Tag }}-arm64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/arm64"
+    goarch: arm64
+
+docker_manifests:
+  - name_template: "tardisx/linkwallet:{{ .Tag }}"
+    image_templates:
+      - "tardisx/linkwallet:{{ .Tag }}-amd64"
+      - "tardisx/linkwallet:{{ .Tag }}-arm64"
+  - name_template: "tardisx/linkwallet:latest"
+    image_templates:
+      - "tardisx/linkwallet:{{ .Tag }}-amd64"
+      - "tardisx/linkwallet:{{ .Tag }}-arm64"

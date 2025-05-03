@@ -3,6 +3,7 @@ package version
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 
@@ -10,7 +11,7 @@ import (
 	"golang.org/x/mod/semver"
 )
 
-var version string
+var version string // populated by goreleaser, without leading 'v'
 var commit string
 var date string
 
@@ -18,7 +19,7 @@ var VersionInfo Info
 
 func init() {
 	VersionInfo.Remote.Valid = false
-	VersionInfo.Local.Version = version
+	VersionInfo.Local.Version = "v" + version
 }
 
 type Info struct {
@@ -39,10 +40,23 @@ func (vi *Info) UpgradeAvailable() bool {
 	if !vi.Remote.Valid {
 		return false
 	}
-	if semver.Compare(vi.Local.Version, vi.Remote.Tag) < 0 {
-		return true
+
+	log.Printf("checking if upgrade available - local %s remote %s", vi.Local.Version, vi.Remote.Tag)
+	localValid := semver.IsValid(vi.Local.Version)
+	remoteValid := semver.IsValid(vi.Remote.Tag)
+
+	if !localValid {
+		log.Printf("version %s invalid", vi.Local.Version)
 	}
-	return false
+	if !remoteValid {
+		log.Printf("version %s invalid", vi.Remote.Tag)
+	}
+
+	if !localValid || !remoteValid {
+		return false
+	}
+
+	return semver.Compare(vi.Local.Version, vi.Remote.Tag) < 0
 }
 
 func (vi *Info) UpdateVersionInfo() {

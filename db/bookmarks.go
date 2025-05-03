@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/blevesearch/bleve/v2"
+	"github.com/blevesearch/bleve/v2/analysis/lang/en"
 	"github.com/blevesearch/bleve/v2/search/query"
 	"github.com/tardisx/linkwallet/content"
 	"github.com/tardisx/linkwallet/entity"
@@ -124,11 +125,11 @@ func (m *BookmarkManager) Search(opts SearchOptions) ([]entity.BookmarkSearchRes
 	if opts.All {
 		q = bleve.NewMatchAllQuery()
 	} else {
+		mq := bleve.NewMatchQuery(opts.Query)
+		mq.Analyzer = en.AnalyzerName
+		tq := bleve.NewTermQuery(opts.Query)
 
-		q = bleve.NewDisjunctionQuery(
-			bleve.NewMatchQuery(opts.Query),
-			bleve.NewTermQuery(opts.Query),
-		)
+		q = bleve.NewDisjunctionQuery(mq, tq)
 	}
 
 	req := bleve.NewSearchRequest(q)
@@ -188,7 +189,6 @@ func (m *BookmarkManager) UpdateIndexForBookmark(bm *entity.Bookmark) {
 	if err != nil {
 		panic(err)
 	}
-	log.Printf("done bleving")
 }
 
 func (m *BookmarkManager) QueueScrape(bm *entity.Bookmark) {

@@ -2,6 +2,7 @@ package entity
 
 import (
 	"html/template"
+	"strings"
 	"time"
 )
 
@@ -17,6 +18,13 @@ type Bookmark struct {
 
 func (bm Bookmark) Type() string {
 	return "bookmark"
+}
+
+func (bm Bookmark) DisplayTitle() string {
+	if strings.TrimSpace(bm.Info.Title) == "" {
+		return bm.URL
+	}
+	return bm.Info.Title
 }
 
 type PageInfo struct {

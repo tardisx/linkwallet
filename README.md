@@ -1,4 +1,8 @@
 
+# ARCHIVED - 2025-05-23
+
+Due to GitHub's AI enshittification, this project has been moved to https://code.ppl.town/justin/linkwallet
+
 # linkwallet
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/tardisx/linkwallet)](https://goreportcard.com/report/github.com/tardisx/linkwallet)
